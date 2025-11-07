@@ -1,0 +1,50 @@
+Progress Updates On Files:
+
+Package: Core
+___________________________
+| Direction.java       |🟥|  # Which way a Pixel is facing
+| InputEvent.java      |🟥|  # Keystroke made by a player
+| Position.java        |🟥|  # Gameboard position of a Pixel
+| Timer.java           |🟥|  # Game timer & tick counter
+___________________________
+
+-------- Gameplay ---------
+___________________________
+| Session.java         |🟥|  # Orchestrates one run; tick loop, collisions, wiring
+| Runner.java          |🟥|  # Player-controlled entity; validates & moves
+| Chaser.java          |🟥|  # AI-controlled entity; facing + step/canSee
+| ChaserAI.java        |🟥|  # Strategy interface for nextMove()
+___________________________
+
+--- Persistence ---
+___________________________
+| Leaderboard.java      |🟥|  # Stores up to 10 results
+| LeaderboardEntry.java |🟥|  # One saved score + cfg snapshot
+___________________________
+
+--- Scoring ---
+___________________________
+| ScoreSystem.java     |🟥|  # Ticks, per-tick scoring, computeFinal()
+| Multiplier.java      |🟥|  # Difficulty/bonus factor(s) applied to score
+___________________________
+
+--- Settings ---
+___________________________
+| GameConfig.java      |🟥|  # Validates size/chaserCount/chaserSpeed/seed
+___________________________
+
+
+--- World ---
+___________________________
+| Maze.java            |🟥|  # Grid (cells), generate(size, seed), queries
+| Cell.java            |🟥|  # One tile: (row, col, isWall)
+___________________________
+
+
+
+
+
+
+Done = ✅
+Issues = ⚠️
+Not Done = 🟥
