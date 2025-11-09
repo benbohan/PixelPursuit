@@ -1,8 +1,7 @@
 {
-  "java.project.sourcePaths": ["PixelPursuit/src"],
-  "java.project.outputPath": "PixelPursuit/bin",
+  "java.project.sourcePaths": ["src"],
+  "java.project.outputPath": "bin",
   "java.project.referencedLibraries": [
-    "lib/javafx-sdk-24.0.2/lib/*.jar"
+    "${workspaceFolder}/lib/javafx-sdk-24.0.2/lib/*.jar"
   ]
 }
-

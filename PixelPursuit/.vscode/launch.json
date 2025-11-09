@@ -6,7 +6,7 @@
       "name": "Run PixelPursuit (JavaFX)",
       "request": "launch",
       "mainClass": "com.pixelpursuit.app.PixelPursuitApp",
-      "vmArgs": "--module-path \"${workspaceFolder}/lib/javafx-sdk-24.0.2/lib\" --add-modules javafx.controls"
+      "vmArgs": "--module-path \"${workspaceFolder}/PixelPursuit/lib/javafx-sdk-24.0.2/lib\" --add-modules javafx.controls"
     }
   ]
 }
