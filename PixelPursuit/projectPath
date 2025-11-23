@@ -1,0 +1,37 @@
+Project Path
+
+pixelpursuit/
+├─ .vscode/
+│  ├─ launch.json
+│  └─ settings.json
+├─ lib/javafx-sdk-24.0.2/
+│  └─ lib/ (javafx-*.jar files)
+└─ src/
+   ├─ com/pixelpursuit/
+   │  ├─ settings/
+   │  │  └─ GameConfig.java
+   │  ├─ gameplay/
+   │  │  ├─ Session.java
+   │  │  ├─ Runner.java
+   │  │  ├─ Chaser.java
+   │  │  └─ ChaserAI.java
+   │  ├─ world/
+   │  │  ├─ Maze.java
+   │  │  └─ Cell.java
+   │  ├─ core/
+   │  │  ├─ Position.java
+   │  │  ├─ Direction.java
+   │  │  ├─ Timer.java
+   │  │  └─ InputEvent.java
+   │  ├─ scoring/
+   │  │  ├─ ScoreSystem.java
+   │  │  └─ Multiplier.java
+   │  ├─ persistence/
+   │  │  ├─ Leaderboard.java
+   │  │  └─ LeaderboardEntry.java
+   │  └─ app/
+   │     ├─ PixelPursuitApp.java
+   │     └─ ui/
+   │        └─ MazeView.java
+   └─ ui/
+      └─ app.css
