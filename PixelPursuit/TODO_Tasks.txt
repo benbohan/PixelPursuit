@@ -1,9 +1,31 @@
 TODO:
 
 - Display changes (gold and time in maze, only vault in main screen)
+	- add diamonds as currency
+	- make the gold only the ones picked up, right now gold counts up with timer (only add timer gold at the end)
 - 
 - Chaser:
 	- Chaser AI stuck on walls, while following player, only goes towards player
 	- Maybe multiple chasers, more pathways (larger maze, more ways to escape)
 	- Chasers run maze, only target player within small zone
 	- Maps/map generator (check .txt file)
+
+- Fix Screen size things
+	- Button text overflow
+	- Username & Password being Usern... and Passw...
+	
+- Make the gold logo bigger relative to a square on the grid
+
+- Implement cosmetics by adding a wrapper on top of the color of a character
+
+- Make all popups more visually appealing (canva backgrounds) (Ben)
+
+- Implement shop
+
+- Fix commenting
+
+- Make new maps or make a map generator
+
+- Change leaderboard to measure best runs by the best time of survival, not if they die lol
+
+- Add testing for literally everything (kms :( )

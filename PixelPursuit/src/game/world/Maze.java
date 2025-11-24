@@ -5,15 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import game.settings.GameConfig;
+
 /**
  * A rectangular maze made of Cells.
  *
- * Default size is 36 x 18 cells (good 16:9).
+ * Default size is MAZE_WIDTH x MAZE_HEIGHT (from GameConfig).
  */
 public class Maze {
 
-    public static final int DEFAULT_WIDTH  = 36;
-    public static final int DEFAULT_HEIGHT = 18;
+    // Logical dimensions (in cells)
+    private final int width;
+    private final int height;
 
     // cells[row][col] -> cells[y][x]
     private final Cell[][] cells;
@@ -23,16 +26,24 @@ public class Maze {
 
     private static final String MAPS_FILE_NAME = "mazes.txt";
 
+    /**
+     * Default constructor uses GameConfig dimensions.
+     */
     public Maze() {
-        this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this(GameConfig.MAZE_WIDTH, GameConfig.MAZE_HEIGHT);
     }
 
+    /**
+     * Explicit-size constructor.
+     */
     public Maze(int width, int height) {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Maze size must be positive");
         }
 
-        cells = new Cell[height][width];
+        this.width  = width;
+        this.height = height;
+        this.cells  = new Cell[height][width];
 
         // Start with everything walkable; we'll apply a layout next.
         for (int y = 0; y < height; y++) {
@@ -47,12 +58,14 @@ public class Maze {
         }
     }
 
-    public int getWidth()  { return cells[0].length; }
-    public int getHeight() { return cells.length; }
+    // ---------- DIMENSIONS / CELLS ----------
+
+    public int getWidth()  { return width; }
+    public int getHeight() { return height; }
 
     public boolean inBounds(int x, int y) {
-        return x >= 0 && x < getWidth()
-            && y >= 0 && y < getHeight();
+        return x >= 0 && x < width
+            && y >= 0 && y < height;
     }
 
     public Cell getCell(int x, int y) {
@@ -74,8 +87,8 @@ public class Maze {
     // ---------- PRESET MAP LOADING ----------
 
     /**
-     * Try to load a random map from maps.txt.
-     * 
+     * Try to load a random map from mazes.txt.
+     *
      * File format:
      *  - each non-empty line = one map
      *  - map line contains height segments separated by '|'
@@ -181,7 +194,7 @@ public class Maze {
     // ---------- FALLBACK BASIC LAYOUT ----------
 
     /**
-     * Simple built-in layout if maps.txt is missing or invalid.
+     * Simple built-in layout if mazes.txt is missing or invalid.
      */
     public final void generateBasicLayout() {
         int w = getWidth();
