@@ -1,0 +1,9 @@
+TODO:
+
+- Display changes (gold and time in maze, only vault in main screen)
+- 
+- Chaser:
+	- Chaser AI stuck on walls, while following player, only goes towards player
+	- Maybe multiple chasers, more pathways (larger maze, more ways to escape)
+	- Chasers run maze, only target player within small zone
+	- Maps/map generator (check .txt file)
