@@ -1,4 +1,4 @@
-package game.persistance;
+package game.persistence;
 
 public class LeaderboardEntry implements Comparable<LeaderboardEntry> {
     private final String username;

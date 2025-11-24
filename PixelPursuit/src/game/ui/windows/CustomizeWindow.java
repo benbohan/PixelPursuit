@@ -1,6 +1,7 @@
-package game.cosmetics;
+package game.ui.windows;
 
-import game.ui.GameFonts;
+import game.cosmetics.*;
+import game.ui.theme.GameFonts;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

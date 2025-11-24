@@ -1,7 +1,13 @@
-package game.ui;
+package game.ui.windows;
 
-import game.account.Account;
-import game.account.AccountManager;
+import game.account.*;
+import game.ui.*;
+import game.ui.components.*;
+import game.ui.components.controls.RoundedHoverButton;
+import game.ui.components.controls.RoundedPasswordField;
+import game.ui.components.controls.RoundedTextField;
+import game.ui.components.panels.BackgroundPanel;
+import game.ui.theme.GameFonts;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,7 +49,7 @@ public class LogInWindow extends JFrame {
         buttonHeight = (int) (fieldSize.height * 0.8);
 
         // ---------- BACKGROUND ----------
-        JPanel mainPanel = new BackgroundPanel("/game/resources/loginBackground.png");
+        JPanel mainPanel = new BackgroundPanel("/game/resources/images/loginBackground.png");
         mainPanel.setLayout(new GridBagLayout());
         add(mainPanel);
 

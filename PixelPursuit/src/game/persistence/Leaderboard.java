@@ -1,4 +1,4 @@
-package game.persistance;
+package game.persistence;
 
 import game.account.Account;
 

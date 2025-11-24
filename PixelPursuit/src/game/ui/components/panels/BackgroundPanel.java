@@ -1,4 +1,4 @@
-package game.ui;
+package game.ui.components.panels;
 
 import javax.swing.*;
 import java.awt.*;

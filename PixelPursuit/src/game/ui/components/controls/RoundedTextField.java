@@ -1,4 +1,4 @@
-package game.ui;
+package game.ui.components.controls;
 
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;

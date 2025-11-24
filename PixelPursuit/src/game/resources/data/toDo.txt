@@ -29,3 +29,16 @@ TODO:
 - Change leaderboard to measure best runs by the best time of survival, not if they die lol
 
 - Add testing for literally everything (kms :( )
+
+- Packages / Classes to add that simplify the game nicely:
+	- game.scoring
+		- ScoreSystem
+		- Multiplier
+		- SessionResult
+	- game.ui
+		- Assets.java
+		- WindowManager.java
+	- game.ui.screens
+		- CustomizeWindow
+		- ShopWindow
+		- LeaderboardWindow

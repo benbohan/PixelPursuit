@@ -1,7 +1,10 @@
-package game.ui;
+package game.ui.components.panels;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import game.ui.theme.GameFonts;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -28,13 +31,13 @@ public class GoldDisplayPanel extends JPanel {
         float fontSize = Math.max(18f, Math.min(screenHeight / 40f, 28f));
 
         // --- Vault icon + text ---
-        JLabel vaultIconLabel = new JLabel(loadIcon("/game/resources/vault.png", 32));
+        JLabel vaultIconLabel = new JLabel(loadIcon("/game/resources/images/vault.png", 32));
         vaultTextLabel = new JLabel(": " + vaultAmount);
         vaultTextLabel.setFont(GameFonts.get(fontSize, Font.BOLD));
         vaultTextLabel.setForeground(Color.WHITE);
 
         // --- Gold icon + text ---
-        JLabel goldIconLabel = new JLabel(loadIcon("/game/resources/gold.png", 32));
+        JLabel goldIconLabel = new JLabel(loadIcon("/game/resources/images/gold.png", 32));
         goldTextLabel = new JLabel(": " + goldAmount);
         goldTextLabel.setFont(GameFonts.get(fontSize, Font.BOLD));
         goldTextLabel.setForeground(Color.WHITE);

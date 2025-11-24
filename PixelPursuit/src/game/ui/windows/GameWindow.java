@@ -1,8 +1,13 @@
-package game.ui;
+package game.ui.windows;
 
 import game.account.*;
 import game.world.*;
 import game.gameplay.*;
+import game.ui.*;
+import game.ui.components.panels.BackgroundPanel;
+import game.ui.components.panels.GamePanel;
+import game.ui.components.panels.GoldDisplayPanel;
+import game.ui.theme.GameFonts;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,7 +51,7 @@ public class GameWindow extends JFrame {
         
         // --- background frame art ---
         BackgroundPanel mainPanel =
-                new BackgroundPanel("/game/resources/gameBackground.png");
+                new BackgroundPanel("/game/resources/images/gameBackground.png");
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
         

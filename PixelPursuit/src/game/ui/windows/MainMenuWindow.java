@@ -1,8 +1,13 @@
-package game.ui;
+package game.ui.windows;
 
 import game.account.*;
-import game.persistance.*;
 import game.cosmetics.*;
+import game.persistence.*;
+import game.ui.*;
+import game.ui.components.controls.RoundedHoverButton;
+import game.ui.components.panels.BackgroundPanel;
+import game.ui.components.panels.GoldDisplayPanel;
+import game.ui.theme.GameFonts;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -69,7 +74,7 @@ public class MainMenuWindow extends JFrame {
         fullButtonWidth = (int) Math.round(rowWidth * 1.175);
 
         // ---------- BACKGROUND ----------
-        BackgroundPanel mainPanel = new BackgroundPanel("/game/resources/menuBackground.png");
+        BackgroundPanel mainPanel = new BackgroundPanel("/game/resources/images/menuBackground.png");
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
 
