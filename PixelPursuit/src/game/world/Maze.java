@@ -24,7 +24,9 @@ public class Maze {
     private int entranceX, entranceY;
     private int exitX, exitY;
 
-    private static final String MAPS_FILE_NAME = "mazes.txt";
+    // Path relative to PROJECT ROOT:
+    // PixelPursuit/src/game/resources/data/mazes.txt
+    private static final String MAZES_RELATIVE_PATH = "src/game/resources/data/mazes.txt";
 
     /**
      * Default constructor uses GameConfig dimensions.
@@ -84,6 +86,35 @@ public class Maze {
     public Cell getEntranceCell() { return getCell(entranceX, entranceY); }
     public Cell getExitCell()     { return getCell(exitX, exitY); }
 
+    // ---------- FILE RESOLUTION ----------
+
+    /**
+     * Try to find mazes.txt whether the working directory is the project root
+     * or the bin/ folder.
+     */
+    private File findMazesFile() {
+        // Helpful debug if something goes wrong
+        System.out.println("Maze: working dir = " + new File(".").getAbsolutePath());
+
+        // 1) Try from current working directory (usually project root)
+        File f1 = new File(MAZES_RELATIVE_PATH);
+        if (f1.exists()) {
+            System.out.println("Maze: using mazes.txt at " + f1.getAbsolutePath());
+            return f1;
+        }
+
+        // 2) If we're running from bin/, go one level up
+        File f2 = new File(".." + File.separator + MAZES_RELATIVE_PATH);
+        if (f2.exists()) {
+            System.out.println("Maze: using mazes.txt at " + f2.getAbsolutePath());
+            return f2;
+        }
+
+        // 3) Not found → report and let caller handle fallback layout
+        System.out.println("Maze: mazes.txt not found. Expected at " + f1.getAbsolutePath());
+        return f1;
+    }
+
     // ---------- PRESET MAP LOADING ----------
 
     /**
@@ -98,7 +129,7 @@ public class Maze {
      * Returns true on success, false on failure.
      */
     private boolean loadRandomPresetFromFile() {
-        File file = new File(MAPS_FILE_NAME);
+        File file = findMazesFile();
         if (!file.exists()) {
             return false;
         }

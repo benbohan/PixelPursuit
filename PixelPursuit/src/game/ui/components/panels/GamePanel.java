@@ -1,6 +1,7 @@
-package game.ui;
+package game.ui.components.panels;
 
 import game.gameplay.*;
+import game.ui.windows.GameWindow;
 import game.world.*;
 import game.cosmetics.*;
 
@@ -52,7 +53,7 @@ public class GamePanel extends JPanel implements KeyListener {
         // Load the stone texture (place stone.png in /game/resources/)
         try {
             stoneOriginal = new ImageIcon(
-                    GamePanel.class.getResource("/game/resources/stone.png")
+                    GamePanel.class.getResource("/game/resources/images/stone.png")
             ).getImage();
         } catch (Exception e) {
             stoneOriginal = null;
@@ -61,7 +62,7 @@ public class GamePanel extends JPanel implements KeyListener {
         // Load the gold texture (place gold.png in /game/resources/)
         try {
             goldOriginal = new ImageIcon(
-                    GamePanel.class.getResource("/game/resources/gold.png")
+                    GamePanel.class.getResource("/game/resources/images/gold.png")
             ).getImage();
         } catch (Exception e) {
             goldOriginal = null;

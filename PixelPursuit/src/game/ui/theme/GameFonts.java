@@ -1,4 +1,4 @@
-package game.ui;
+package game.ui.theme;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -11,7 +11,7 @@ public class GameFonts {
     static {
         try {
             // Load the TTF from resources
-            InputStream is = GameFonts.class.getResourceAsStream("/game/resources/PressStart2P-Regular.ttf");
+            InputStream is = GameFonts.class.getResourceAsStream("/game/resources/font/PressStart2P-Regular.ttf");
             if (is == null) {
                 throw new RuntimeException("PressStart2P-Regular.ttf not found in /game/resources/");
             }
