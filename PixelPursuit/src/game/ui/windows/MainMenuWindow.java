@@ -8,6 +8,8 @@ import game.ui.components.controls.RoundedHoverButton;
 import game.ui.components.panels.BackgroundPanel;
 import game.ui.components.panels.GoldDisplayPanel;
 import game.ui.theme.GameFonts;
+import game.settings.*;
+
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -202,10 +204,31 @@ public class MainMenuWindow extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE
         ));
 
-        settingsButton.addActionListener(e -> JOptionPane.showMessageDialog(
-                this, "Settings clicked (hook up settings screen)", "Info",
-                JOptionPane.INFORMATION_MESSAGE
-        ));
+        settingsButton.addActionListener(e -> {
+            Difficulty current = GameConfig.getCurrentDifficulty();
+            Difficulty[] options = Difficulty.values();
+
+            Difficulty choice = (Difficulty) JOptionPane.showInputDialog(
+                    this,
+                    "Select difficulty:",
+                    "Difficulty",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    options,
+                    current
+            );
+
+            if (choice != null) {
+                GameConfig.setCurrentDifficulty(choice);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Difficulty set to " + choice.getDisplayName()
+                                + "\nHard runs pay out more final gold.",
+                        "Difficulty Updated",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        });
 
         leaderboardButton.addActionListener(e -> showLeaderboardDialog());
 

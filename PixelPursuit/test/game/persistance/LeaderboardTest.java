@@ -8,15 +8,17 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import game.account.Account;
+import game.persistence.Leaderboard;
+import game.persistence.LeaderboardEntry;
 
 public class LeaderboardTest {
 
     @Test
     void buildFromAccountsSortsAndTrimsAndSkipsZeroTimes() {
-        Account a = new Account("alice", "pw", 0, 0, 10.0);
-        Account b = new Account("bob",   "pw", 0, 0, 30.0);
-        Account c = new Account("carl",  "pw", 0, 0, 20.0);
-        Account d = new Account("dave",  "pw", 0, 0, 0.0); // no best time
+        Account a = new Account("alice", "pw", 0, 0, 0, 0, 10.0, 0, 0, 0);
+        Account b = new Account("bob",   "pw", 0, 0, 0, 0, 30.0, 0, 0, 0);
+        Account c = new Account("carl",  "pw", 0, 0, 0, 0, 20.0, 0, 0, 0);
+        Account d = new Account("dave",  "pw", 0, 0, 0, 0, 0.0, 0, 0, 0); // no best time
 
         List<Account> accounts = Arrays.asList(a, b, c, d);
 

@@ -4,6 +4,8 @@ import game.account.*;
 import game.world.*;
 import game.gameplay.*;
 import game.ui.*;
+import game.scoring.*;
+import game.settings.*;
 import game.ui.components.panels.BackgroundPanel;
 import game.ui.components.panels.GamePanel;
 import game.ui.components.panels.GoldDisplayPanel;
@@ -21,6 +23,8 @@ public class GameWindow extends JFrame {
 
     private final Account currentAccount;
     private final AccountManager accountManager;
+    private final ScoreSystem scoreSystem;
+    private final Difficulty difficulty;
     private final Session session;
     private final GamePanel gamePanel;
     private final GoldDisplayPanel hud;
@@ -31,6 +35,8 @@ public class GameWindow extends JFrame {
         super("Pixel Pursuit - Game");
         this.currentAccount = account;
         this.accountManager = new AccountManager();
+        this.scoreSystem = new ScoreSystem();
+        this.difficulty = GameConfig.getCurrentDifficulty();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -117,17 +123,19 @@ public class GameWindow extends JFrame {
     }
     
     private void showEndOfRunDialog(boolean escaped) {
+        SessionResult result = scoreSystem.compute(session, difficulty, escaped);
+
         // --- compute score components ---
-        int timeGold    = session.getTimeGold();    // from surviving
-        int pickupGold  = session.getPickupGold();  // from gold on the map
-        int baseGold    = timeGold + pickupGold;
+        int timeGold    = result.getTimeGold();    // from surviving
+        int pickupGold  = result.getPickupGold();  // from gold on the map
+        int baseGold    = result.getBaseGold();
 
-        int multiplier  = escaped ? 1 : 0;          // later: 2 for harder AIs
-        int finalGold   = baseGold * multiplier;
+        int multiplier  = result.getMultiplier().asInt();
+        int finalGold   = result.getFinalGold();
 
-        double timeSec  = session.getElapsedTimeSeconds();
+        double timeSec  = result.getTimeSeconds();
         String timeStr  = formatTime(timeSec);
-
+        
         // --- update Account with finalGold ---
         if (currentAccount != null) {
             double oldBest = currentAccount.getBestTime();
