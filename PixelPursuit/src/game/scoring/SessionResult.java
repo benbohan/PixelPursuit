@@ -3,10 +3,10 @@ package game.scoring;
 import game.settings.Difficulty;
 
 /**
- * Immutable snapshot of the results of a single run.
+ * Collection of the results of a single run.
  *
  * This keeps all the numbers that the end-of-run dialog and
- * Leaderboard might care about.
+ * Leaderboard might use.
  */
 public final class SessionResult {
 
