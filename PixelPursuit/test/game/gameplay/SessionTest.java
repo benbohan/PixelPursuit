@@ -11,7 +11,7 @@ public class SessionTest {
     @Test
     void survivalGoldAccumulatesOverTime() {
         Maze maze = new Maze(5, 5);
-        // Start runner at entrance so we know it's valid
+        // Start runner at entrance
         Runner runner = new Runner(maze,
                                    maze.getEntranceX(),
                                    maze.getEntranceY());
@@ -41,7 +41,7 @@ public class SessionTest {
         Runner runner = new Runner(maze, x, y);
         Session session = new Session(maze, runner);
 
-        // Chaser with null AI; we just care about collision
+        // Chaser with null AI, just care about collision
         Chaser chaser = new Chaser(maze, x, y, null);
         session.addChaser(chaser);
 
