@@ -3,7 +3,7 @@ package game.settings;
 /**
  * Overall difficulty for a run of Pixel Pursuit.
  *
- * For Task 3 we only use EASY and HARD, but enum makes it easy to add
+ * For now only use easy and hard, but enum makes it easy to add
  * more levels later.
  */
 public enum Difficulty {
