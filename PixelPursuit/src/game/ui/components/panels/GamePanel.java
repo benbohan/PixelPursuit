@@ -5,12 +5,9 @@ import game.ui.theme.UiColors;
 import game.ui.windows.GameWindow;
 import game.world.*;
 import game.cosmetics.*;
-<<<<<<< HEAD
 import game.settings.GameConfig;
 
-=======
 import game.account.*;
->>>>>>> branch 'main' of https://github.com/benbohan/PixelPursuit.git
 
 import javax.swing.*;
 import java.awt.*;
