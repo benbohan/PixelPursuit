@@ -195,7 +195,7 @@ public class MainMenuWindow extends JFrame {
             }
         });
 
-        customizeButton.addActionListener(e -> new CustomizeWindow());
+        customizeButton.addActionListener(e -> new CustomizeWindow(currentAccount));
         
         shopButton.addActionListener(e -> JOptionPane.showMessageDialog(
                 this, "Shop clicked (hook up shop screen)", "Info",

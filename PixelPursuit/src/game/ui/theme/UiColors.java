@@ -23,6 +23,16 @@ public class UiColors {
     // Borders / outlines
     public static final Color BORDER_LIGHT      = new Color(80, 80, 80);
     public static final Color BORDER_STRONG     = new Color(120, 120, 120);
+    
+ // ---------- MAZE / GAME WORLD COLORS ----------
+
+    public static final Color MAZE_FLOOR       = new Color(45, 45, 45);
+    public static final Color MAZE_WALL        = new Color(30, 30, 30);
+    public static final Color MAZE_GRID        = new Color(60, 60, 60);
+    public static final Color MAZE_ENTRANCE    = new Color(126, 217, 87);
+    public static final Color MAZE_EXIT        = new Color(220, 70, 70);    
+    public static final Color CHASER_DEFAULT   = new Color(255, 49, 49);    
+
 
 
     // ---------- PLAYER COLORS ----------

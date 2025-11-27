@@ -1,7 +1,9 @@
 package game.ui.windows;
 
-import game.cosmetics.*;
+import game.account.Account;
+import game.cosmetics.PlayerCosmetics;
 import game.ui.theme.GameFonts;
+import game.ui.theme.UiColors;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,8 +16,11 @@ public class CustomizeWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    public CustomizeWindow() {
+    private final Account account;
+
+    public CustomizeWindow(Account account) {
         super("Customize - Runner Color");
+        this.account = account;
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -46,13 +51,13 @@ public class CustomizeWindow extends JFrame {
         JPanel colorRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 8));
         colorRow.setOpaque(false);
 
-        // Predefined colors that fit your palette
-        addColorButton(colorRow, new Color(255, 255, 255));  // white
-        addColorButton(colorRow, new Color(126, 217, 87));   // green (#7ED957-ish)
-        addColorButton(colorRow, new Color(80, 180, 255));   // blue
-        addColorButton(colorRow, new Color(255, 120, 120));  // red/pink
-        addColorButton(colorRow, new Color(255, 220, 120));  // yellow
-        addColorButton(colorRow, new Color(190, 120, 255));  // purple
+        // Map buttons to your PlayerCosmetics color IDs + UiColors palette
+        addColorButton(colorRow, PlayerCosmetics.COLOR_RED,        UiColors.PLAYER_RED);
+        addColorButton(colorRow, PlayerCosmetics.COLOR_ORANGE,     UiColors.PLAYER_ORANGE);
+        addColorButton(colorRow, PlayerCosmetics.COLOR_YELLOW,     UiColors.PLAYER_YELLOW);
+        addColorButton(colorRow, PlayerCosmetics.COLOR_DARK_GREEN, UiColors.PLAYER_DARK_GREEN);
+        addColorButton(colorRow, PlayerCosmetics.COLOR_DARK_BLUE,  UiColors.PLAYER_DARK_BLUE);
+        addColorButton(colorRow, PlayerCosmetics.COLOR_PURPLE,     UiColors.PLAYER_PURPLE);
 
         mainPanel.add(colorRow);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 16)));
@@ -73,8 +78,8 @@ public class CustomizeWindow extends JFrame {
         setVisible(true);
     }
 
-    /** Helper to create a square color button that sets the runner color. */
-    private void addColorButton(JPanel parent, Color color) {
+    /** Helper to create a square color button that equips a runner color. */
+    private void addColorButton(JPanel parent, int colorId, Color color) {
         JButton btn = new JButton();
         btn.setPreferredSize(new Dimension(48, 48));
         btn.setMinimumSize(new Dimension(48, 48));
@@ -86,8 +91,11 @@ public class CustomizeWindow extends JFrame {
         btn.setFocusPainted(false);
 
         btn.addActionListener(e -> {
-            PlayerCosmetics.setRunnerColor(color);
-            // Optional tiny feedback: border flash
+            if (account != null) {
+                // Unlock this color (if not already) and equip it
+                PlayerCosmetics.unlockColor(account, colorId);
+                PlayerCosmetics.equipColor(account, colorId);
+            }
             Toolkit.getDefaultToolkit().beep();
         });
 

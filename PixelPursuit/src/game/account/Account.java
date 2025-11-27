@@ -13,9 +13,8 @@ public class Account {
     private long unlocks;  // unlocked cosmetics bit mask
 
     // Constructor - New Account
-    public Account(String username, String password, int freeGold, int freeDiamonds, 
-    				int vaultGold, int vaultDiamonds, double bestTime,
-    				long color, long cosmetic, long unlocks) {
+    public Account(String username, String password, int freeGold, int freeDiamonds, int vaultGold, 
+    				int vaultDiamonds, double bestTime, long color, long cosmetic, long unlocks) {
         this.username = username;
         this.password = password;
         this.freeGold = freeGold;
@@ -53,9 +52,9 @@ public class Account {
     
     // Line setup for "accounts.txt" storage
     public String toFileLine() {
-        return username + ";" + password + ";" + freeGold + ";" + 
-               freeDiamonds + ";" + vaultGold + ";" + vaultDiamonds + ";" +
-               bestTime + ";" + color + ";" + cosmetic + ";" + unlocks;
+        return username + ";" + password + ";" + freeGold + ";" + freeDiamonds + ";" + 
+        		vaultGold + ";" + vaultDiamonds + ";" + bestTime + ";" + color + ";" + 
+        		cosmetic + ";" + unlocks;
     }
 
     // Parse from one line in "accounts.txt"
@@ -73,8 +72,8 @@ public class Account {
         long unlocks = 0L;
         
         /* Format all player info (1 Line)
-         * username;password;freeGold;freeDiamonds;
-         * vaultGold;vaultDiamonds;bestTime;color;cosmetic;unlocks
+         * username;password;freeGold;freeDiamonds;vaultGold;vaultDiamonds;
+         * bestTime;color;cosmetic;unlocks
          */
         String username = parts[0];
         String password = parts[1];
@@ -87,8 +86,7 @@ public class Account {
         cosmetic      = Long.parseLong(parts[8]);
         unlocks       = Long.parseLong(parts[9]);
         
-        return new Account(username, password, freeGold, freeDiamonds,
-                           vaultGold, vaultDiamonds, bestTime,
-                           color, cosmetic, unlocks);
+        return new Account(username, password, freeGold, freeDiamonds, vaultGold, 
+        					vaultDiamonds, bestTime, color, cosmetic, unlocks);
     }
 }

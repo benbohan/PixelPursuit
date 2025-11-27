@@ -1,9 +1,11 @@
 package game.ui.components.panels;
 
 import game.gameplay.*;
+import game.ui.theme.UiColors;
 import game.ui.windows.GameWindow;
 import game.world.*;
 import game.cosmetics.*;
+import game.account.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +25,7 @@ public class GamePanel extends JPanel implements KeyListener {
     private final Maze maze;
     private final Runner runner;
     private final GameWindow window;
+    private Account account;
 
     // Stone texture for wall cells
     private Image stoneOriginal;
@@ -96,6 +99,11 @@ public class GamePanel extends JPanel implements KeyListener {
         movementTimer.start();
     }
 
+    // Set the account for cosmetics / stats
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
     /** Called by GameWindow when the run ends so we stop the timer. */
     public void stopMovement() {
         movementTimer.stop();
@@ -129,13 +137,17 @@ public class GamePanel extends JPanel implements KeyListener {
         int offsetX = (getWidth()  - mazePixelW) / 2;
         int offsetY = (getHeight() - mazePixelH) / 2;
 
-        Color floorColor   = new Color(45, 45, 45);
-        Color wallFallback = new Color(30, 30, 30);
-        Color gridColor    = new Color(60, 60, 60);
-        Color entranceCol  = new Color(126, 217, 87); // green
-        Color exitCol      = new Color(220, 70, 70);  // red
-        Color runnerColor  = PlayerCosmetics.getRunnerColor();
-        Color chaserColor  = new Color(255, 80, 80);  // bright red chaser
+        Color floorColor   = UiColors.MAZE_FLOOR;
+        Color wallFallback = UiColors.MAZE_WALL;
+        Color gridColor    = UiColors.MAZE_GRID;
+        Color entranceCol  = UiColors.MAZE_ENTRANCE;
+        Color exitCol      = UiColors.MAZE_EXIT;
+
+        Color runnerColor  = (account != null)
+                ? PlayerCosmetics.getRunnerColor(account)
+                : UiColors.PLAYER_DEFAULT;
+
+        Color chaserColor  = UiColors.CHASER_DEFAULT;
 
         // --- Scale stone texture to a larger size than the cell (zoomed in) ---
         if (stoneOriginal != null && cellSize > 0 && stoneForCellSize != cellSize) {

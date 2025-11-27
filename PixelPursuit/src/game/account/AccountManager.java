@@ -89,13 +89,7 @@ public class AccountManager {
         }
 
         // New account: 0 currencies / default equips / no unlocks
-        Account acc = new Account(username, password,
-                                  0, 0,    // freeGold, freeDiamonds
-                                  0, 0,    // vaultGold, vaultDiamonds
-                                  0.0,     // bestTime
-                                  0L, 0L,  // color, cosmetic
-                                  0L);     // unlocks bit mask
-
+        Account acc = new Account(username, password, 0, 0, 0, 0, 0.0, 0L, 0L, 0L);
         accounts.put(username, acc);
         saveAccounts();
         return acc;
