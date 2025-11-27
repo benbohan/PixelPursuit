@@ -8,26 +8,22 @@ import game.settings.GameConfig;
  * Responsible for turning raw Session numbers (time survived, gold earned)
  * into a final payout using the current Difficulty and multiplier rules.
  *
- * For Task 3 the scoring model is intentionally simple:
+ * Scoring model:
  *   - baseGold = timeGold + pickupGold
  *   - finalGold = baseGold * multiplier
- *   - multiplier is 0x on death, 1x on EASY escape, 2x on HARD escape.
+ *   - multiplier is 0x on death, 1x on easy escape, 2x on hard escape.
  */
 public final class ScoreSystem {
 
     /**
      * Compute a complete SessionResult for the given run.
-     *
-     * @param session    finished game Session
-     * @param difficulty difficulty that was active for this run
-     * @param escaped    true if the runner reached the exit
      */
     public SessionResult compute(Session session,
                                  Difficulty difficulty,
                                  boolean escaped) {
 
         if (difficulty == null) {
-            // Fall back to whatever the global setting is.
+            // Use whatever the global setting is
             difficulty = GameConfig.getCurrentDifficulty();
         }
 
