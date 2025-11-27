@@ -6,58 +6,31 @@ import java.util.*;
 
 public class AccountManager {
 
-    // Path relative to the PROJECT ROOT:
-    // PixelPursuit/src/game/resources/data/accounts.txt
-    private static final String RELATIVE_PATH = "src/game/resources/data/accounts.txt";
+    // Path to accounts.txt: PixelPursuit/src/game/resources/data/accounts.txt
+    private static final String ACCOUNTS_PATH = "src/game/resources/data/accounts.txt";
 
     private final Map<String, Account> accounts = new HashMap<>();
 
+    // Constructor
     public AccountManager() {
         loadAccounts();
     }
 
-    // ---------- PATH RESOLUTION ----------
-
-    /**
-     * Try to find accounts.txt. First from the project root, then from
-     * one level up (if the working directory is bin/).
-     */
-    private File findAccountsFile() {
-        // Show working dir so we can see what Eclipse is doing
-        System.out.println("Working dir = " + new File(".").getAbsolutePath());
-
-        // 1) Try from current working directory (usually project root)
-        File f1 = new File(RELATIVE_PATH);
-        if (f1.exists()) {
-            System.out.println("Using accounts.txt at: " + f1.getAbsolutePath());
-            return f1;
-        }
-
-        // 2) If we're running from bin/, go one level up
-        File f2 = new File(".." + File.separator + RELATIVE_PATH);
-        if (f2.exists()) {
-            System.out.println("Using accounts.txt at: " + f2.getAbsolutePath());
-            return f2;
-        }
-
-        // 3) Not found: we’ll create it later at project-root version
-        System.out.println("accounts.txt not found, will create new at: " + f1.getAbsolutePath());
-        return f1;
-    }
-
     // ---------- FILE I/O ----------
 
+    // Load all accounts from accounts.txt
     public void loadAccounts() {
         accounts.clear();
 
-        File file = findAccountsFile();
+        File file = new File(ACCOUNTS_PATH);
         if (!file.exists()) {
-            // No file yet – start empty
+            // No file: start empty
             return;
         }
 
         System.out.println("Loading accounts from: " + file.getAbsolutePath());
-
+        
+        // Open file for reading (1 line at a time)
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
 
@@ -66,34 +39,27 @@ public class AccountManager {
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
-                // username;password;freeGold;vaultGold;bestTime
-                String[] parts = line.split(";");
-                if (parts.length != 5) {
+                try {
+                    // Line --> Account object
+                    Account acc = Account.fromFileLine(line);
+                    accounts.put(acc.getUsername(), acc);
+                } catch (Exception e) {
                     System.err.println("Skipping malformed account line: " + line);
-                    continue;
                 }
-
-                String username = parts[0];
-                String password = parts[1];
-                int freeGold    = Integer.parseInt(parts[2]);
-                int vaultGold   = Integer.parseInt(parts[3]);
-                double bestTime = Double.parseDouble(parts[4]);
-
-                Account acc = new Account(username, password, freeGold, vaultGold, bestTime);
-                accounts.put(username, acc);
             }
-        } catch (IOException | NumberFormatException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Debug: show what we loaded
+        // Show loaded accounts
         System.out.println("Loaded accounts: " + accounts.keySet());
     }
 
+    // Save all accounts back to accounts.txt
     private void saveAccounts() {
-        File file = findAccountsFile();
+        File file = new File(ACCOUNTS_PATH);
 
-        // Ensure the folder exists (src/game/resources/data)
+        // Ensure the folder exists
         File parent = file.getParentFile();
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
@@ -101,11 +67,13 @@ public class AccountManager {
 
         System.out.println("Saving accounts to: " + file.getAbsolutePath());
 
+        // Open file for writing
         try (PrintWriter writer = new PrintWriter(
                 new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-
+        	
+        	// Write each Account
             for (Account acc : accounts.values()) {
-                writer.println(acc.toFileLine());  // must also be ';'-separated
+                writer.println(acc.toFileLine());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,18 +82,20 @@ public class AccountManager {
 
     // ---------- PUBLIC API ----------
 
-    /** Try to create a new account. Returns null if username already exists. */
+    // Create a new account: Returns null if username taken.
     public Account createAccount(String username, String password) {
         if (accounts.containsKey(username)) {
-            return null; // username taken
+            return null; // Username taken
         }
-        Account acc = new Account(username, password, 0, 0, 0.0);
+
+        // New account: 0 currencies / default equips / no unlocks
+        Account acc = new Account(username, password, 0, 0, 0, 0, 0.0, 0L, 0L, 0L);
         accounts.put(username, acc);
         saveAccounts();
         return acc;
     }
 
-    /** Try to log in. Returns the Account if ok, null if wrong user/pass. */
+    // Log in: Returns Account OR null if wrong Username/Password.
     public Account login(String username, String password) {
         Account acc = accounts.get(username);
         if (acc == null) return null;
@@ -133,13 +103,13 @@ public class AccountManager {
         return acc;
     }
 
-    /** Call this after you update stats (gold, best time). */
+    // Stores updated account to accounts.txt
     public void updateAccount(Account acc) {
         accounts.put(acc.getUsername(), acc);
         saveAccounts();
     }
 
-    /** For leaderboard, etc. */
+    // Collect all accounts for Leaderboard
     public Collection<Account> getAllAccounts() {
         return accounts.values();
     }
