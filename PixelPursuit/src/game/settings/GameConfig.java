@@ -26,7 +26,6 @@ public final class GameConfig {
     // ----- Maze layout -----
 
     // Logical maze dimensions in cells
-    // (you widened it by 4 columns: 32 -> 36)
     public static final int MAZE_WIDTH  = 36;
     public static final int MAZE_HEIGHT = 18;
 
@@ -48,7 +47,7 @@ public final class GameConfig {
     // ----- Scoring / multipliers -----
 
     // For now we only use 0x (death) and 1x (escape),
-    // but this is ready for 2x/3x on harder AIs later.
+    // but ready for 2x/3x on harder AIs later
     public static final double MULTIPLIER_DEATH  = 0.0;
     public static final double MULTIPLIER_NORMAL = 1.0;
     public static final double MULTIPLIER_HARD   = 2.0;
