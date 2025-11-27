@@ -28,8 +28,6 @@ TODO:
 
 - Change leaderboard to measure best runs by the best time of survival, not if they die lol
 
-- Add testing for literally everything (kms :( )
-
 - Packages / Classes to add that simplify the game nicely:
 	- game.scoring
 		- ScoreSystem
