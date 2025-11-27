@@ -7,10 +7,10 @@ import game.settings.GameConfig;
  * Represents the overall score multiplier applied at the end of a run.
  *
  * Currently multiplier depends on:
- *  - whether the runner escaped or died, and
- *  - the selected difficulty.
+ *  - whether the runner escaped or died
+ *  - the selected difficulty
  *
- * Death always gives 0x. Escaping on EASY gives 1x, escaping on HARD
+ * Death always gives 0x. Escaping on easy gives 1x, escaping on hard
  * gives 2x (using the constants in GameConfig).
  */
 public final class Multiplier {
@@ -39,7 +39,7 @@ public final class Multiplier {
         if (difficulty == Difficulty.HARD) {
             return new Multiplier(GameConfig.MULTIPLIER_HARD);
         } else {
-            // EASY (and any future default difficulties)
+            // easy (and any future default difficulties)
             return new Multiplier(GameConfig.MULTIPLIER_NORMAL);
         }
     }
