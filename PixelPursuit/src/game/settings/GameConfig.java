@@ -9,6 +9,19 @@ public final class GameConfig {
     private GameConfig() {
         // no instances
     }
+    
+    private static Difficulty currentDifficulty = Difficulty.EASY;
+
+    public static Difficulty getCurrentDifficulty() {
+        return currentDifficulty;
+    }
+
+    public static void setCurrentDifficulty(Difficulty difficulty) {
+        if (difficulty == null) {
+            throw new IllegalArgumentException("difficulty cannot be null");
+        }
+        currentDifficulty = difficulty;
+    }
 
     // ----- Maze layout -----
 

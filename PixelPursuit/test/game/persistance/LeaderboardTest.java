@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import game.account.Account;
+import game.persistence.Leaderboard;
+import game.persistence.LeaderboardEntry;
 
 public class LeaderboardTest {
 

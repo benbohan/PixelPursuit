@@ -4,6 +4,8 @@ import game.gameplay.*;
 import game.ui.windows.GameWindow;
 import game.world.*;
 import game.cosmetics.*;
+import game.settings.GameConfig;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +40,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
     // Movement timer: smaller delay = faster glide
     private final Timer movementTimer;
-    private static final int MOVE_INTERVAL_MS = 120; // tweak speed here
+    private static final int MOVE_INTERVAL_MS = GameConfig.RUNNER_MOVE_INTERVAL_MS; // tweak speed here
 
     public GamePanel(Session session, GameWindow window) {
         this.session = session;
