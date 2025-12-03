@@ -1,25 +1,20 @@
 package game.ui.windows;
 
 import game.account.*;
-import game.ui.*;
-import game.ui.components.*;
-import game.ui.components.controls.RoundedHoverButton;
-import game.ui.components.controls.RoundedPasswordField;
-import game.ui.components.controls.RoundedTextField;
-import game.ui.components.panels.BackgroundPanel;
-import game.ui.theme.GameFonts;
+import game.ui.WindowManager;
+import game.ui.components.panels.*;
+import game.ui.components.controls.*;
+import game.ui.theme.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-/**
- * Login window for Pixel Pursuit.
- */
 public class LogInWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    private final WindowManager windowManager;
     private final AccountManager accountManager;
 
     private JTextField usernameField;
@@ -31,10 +26,11 @@ public class LogInWindow extends JFrame {
     private int screenHeight;
     private int screenWidth;
 
-    public LogInWindow() {
+    public LogInWindow(WindowManager windowManager) {
         super("Pixel Pursuit - Login");
 
-        accountManager = new AccountManager();
+        this.windowManager = windowManager;
+        this.accountManager = windowManager.getAccountManager();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -246,8 +242,8 @@ public class LogInWindow extends JFrame {
     }
 
     private void openMainMenu(Account acc) {
-        this.dispose();
-        new MainMenuWindow(acc);
+        windowManager.setCurrentAccount(acc);
+        windowManager.showMainMenu();
     }
 
     private void setMessage(String text, Color color) {
@@ -268,7 +264,6 @@ public class LogInWindow extends JFrame {
 
         field.setForeground(Color.WHITE);
         field.setCaretColor(Color.WHITE);
-        // padding handled by RoundedTextField / RoundedPasswordField
     }
 
     private RoundedHoverButton createMenuButton(String text) {

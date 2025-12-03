@@ -1,7 +1,10 @@
 package game.ui.components.controls;
 
+import game.ui.theme.GameFonts;
+
 import javax.swing.JButton;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * Rounded white button with light gray border and a subtle hover "grow" effect.
@@ -11,10 +14,10 @@ public class RoundedHoverButton extends JButton {
     private static final long serialVersionUID = 1L;
 
     private static final int ARC = 22;
-    public static final float IDLE_SCALE = 0.9f;  // used in LogInWindow sizing math
+    public static final float IDLE_SCALE = 0.9f;  // used in sizing math
 
-    private static final Color BUTTON_FILL   = new Color(255, 255, 255);      // white
-    private static final Color BUTTON_BORDER = BUTTON_FILL.darker();         // light gray
+    private static final Color BUTTON_FILL   = new Color(255, 255, 255);  // white
+    private static final Color BUTTON_BORDER = BUTTON_FILL.darker();      // light gray
 
     public RoundedHoverButton(String text) {
         super(text);
@@ -22,6 +25,52 @@ public class RoundedHoverButton extends JButton {
         setBorderPainted(false);
         setFocusPainted(false);
         setOpaque(false);
+    }
+
+    /**
+     * Factory for menu-style buttons (replaces createHalfButton/createFullButton logic).
+     *
+     * @param text         Button label
+     * @param width        Preferred width in pixels
+     * @param height       Preferred height in pixels
+     * @param screenHeight Screen height (used to scale font nicely)
+     * @return Configured RoundedHoverButton
+     */
+    public static RoundedHoverButton createMenuButton(
+            String text,
+            int width,
+            int height,
+            int screenHeight
+    ) {
+        RoundedHoverButton button = new RoundedHoverButton(text);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        Dimension size = new Dimension(width, height);
+        button.setPreferredSize(size);
+        button.setMaximumSize(size);
+        button.setMinimumSize(size);
+
+        int fontSize = Math.max(18, Math.min(screenHeight / 34, 30));
+        button.setFont(GameFonts.get((float) fontSize, Font.BOLD));
+
+        return button;
+    }
+    
+    public static JPanel createButtonRow(
+            RoundedHoverButton left,
+            RoundedHoverButton right,
+            int gap
+    ) {
+        JPanel row = new JPanel();
+        row.setOpaque(false);
+        row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+        row.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        row.add(left);
+        row.add(Box.createRigidArea(new Dimension(gap, 0)));
+        row.add(right);
+
+        return row;
     }
 
     @Override

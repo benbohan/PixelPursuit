@@ -6,35 +6,32 @@ import game.gameplay.*;
 import game.ui.*;
 import game.scoring.*;
 import game.settings.*;
-import game.ui.components.panels.BackgroundPanel;
-import game.ui.components.panels.GamePanel;
-import game.ui.components.panels.GoldDisplayPanel;
-import game.ui.theme.GameFonts;
+import game.ui.components.panels.*;
+import game.ui.theme.*;
 
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Top-level game window for a run of Pixel Pursuit.
- */
 public class GameWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    private final WindowManager windowManager;
     private final Account currentAccount;
     private final AccountManager accountManager;
     private final ScoreSystem scoreSystem;
     private final Difficulty difficulty;
     private final Session session;
     private final GamePanel gamePanel;
-    private final GoldDisplayPanel hud;
+    private final LootDisplayPanel lootDisplay;
 
     private boolean gameOver = false;
 
-    public GameWindow(Account account) {
+    public GameWindow(WindowManager windowManager, Account account) {
         super("Pixel Pursuit - Game");
+        this.windowManager = windowManager;
         this.currentAccount = account;
-        this.accountManager = new AccountManager();
+        this.accountManager = windowManager.getAccountManager();
         this.scoreSystem = new ScoreSystem();
         this.difficulty = GameConfig.getCurrentDifficulty();
 
@@ -61,14 +58,23 @@ public class GameWindow extends JFrame {
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
         
-        // --- HUD (vault + gold + time) in top-right ---
-        int vault = (currentAccount != null) ? currentAccount.getVaultGold() : 0;
-        int runGold = 0;
-        hud = new GoldDisplayPanel(vault, runGold);
 
+        // ---------- LOOT DISPLAY ----------
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
-        topBar.add(hud, BorderLayout.EAST);
+        
+        this.lootDisplay = new LootDisplayPanel(
+                currentAccount != null ? currentAccount.getFreeGold()     : 0,
+                currentAccount != null ? currentAccount.getFreeDiamonds() : 0,0
+        );
+
+        JPanel rightBox = new JPanel();
+        rightBox.setOpaque(false);
+        rightBox.setLayout(new BoxLayout(rightBox, BoxLayout.X_AXIS));
+        rightBox.add(Box.createHorizontalGlue());
+        rightBox.add(lootDisplay);
+
+        topBar.add(rightBox, BorderLayout.EAST);
         mainPanel.add(topBar, BorderLayout.NORTH);
 
         // --- center game panel ---
@@ -97,7 +103,7 @@ public class GameWindow extends JFrame {
     }
     
     public void updateHudFromSession() {
-        if (hud == null) return;
+        if (lootDisplay == null) return;
 
         int runGold = session.getRunGold();
         double time = session.getElapsedTimeSeconds();
@@ -109,8 +115,8 @@ public class GameWindow extends JFrame {
             vault = currentAccount.getVaultGold();
         }
 
-        hud.setAmounts(vault, runGold);
-        hud.setTime(time);
+        lootDisplay.setAmounts(vault, runGold);
+        lootDisplay.setTime(time);
     }
     
     public void handleRunnerDied() {
@@ -245,13 +251,21 @@ public class GameWindow extends JFrame {
         playAgainBtn.addActionListener(e -> {
             dialog.dispose();
             this.dispose();
-            new GameWindow(currentAccount);  // start a fresh run
+            if (windowManager != null) {
+                windowManager.showGameWindow();   // new run via manager
+            } else {
+                new GameWindow(null, currentAccount); // fallback if ever needed
+            }
         });
 
         menuBtn.addActionListener(e -> {
             dialog.dispose();
             this.dispose();
-            new MainMenuWindow(currentAccount);
+            if (windowManager != null) {
+                windowManager.showMainMenu();
+            } else {
+                new MainMenuWindow(null, currentAccount); // fallback
+            }
         });
 
         dialog.setVisible(true);

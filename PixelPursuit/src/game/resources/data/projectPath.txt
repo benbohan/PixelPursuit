@@ -4,11 +4,11 @@ PixelPursuit/
 │     ├─ ✅GameApp.java
 │     │
 │     ├─ account/
-│     │  ├─ ❎Account.java
-│     │  └─ ❎AccountManager.java
+│     │  ├─ ✅Account.java
+│     │  └─ ✅AccountManager.java
 │     │
 │     ├─ cosmetics/
-│     │  └─ ❎PlayerCosmetics.java
+│     │  └─ ✅PlayerCosmetics.java
 │     │
 │     ├─ gameplay/
 │     │  ├─ ❎Chaser.java ❎
@@ -23,10 +23,10 @@ PixelPursuit/
 │     │
 │     ├─ resources/
 │     │  ├─ data/
-│     │  │  ├─ ❎accounts.txt
+│     │  │  ├─ ✅accounts.txt
 │     │  │  ├─ ❎mazes.txt
-│     │  │  ├─ ❎projectPath.txt
-│     │  │  └─ ❎toDo.txt       
+│     │  │  ├─ ✅projectPath.txt
+│     │  │  └─ ✅toDo.txt       
 │     │  │
 │     │  ├─ font/
 │     │  │  └─ ❎PressStart2P-Regular.ttf
@@ -49,7 +49,7 @@ PixelPursuit/
 │     │  ├─ theme/
 │     │  │  ├─ ❎Assets.java
 │     │  │  ├─ ❎GameFonts.java
-│     │  │  └─ ❎UiColors.java
+│     │  │  └─ ✅UiColors.java
 │     │  │
 │     │  ├─ components/
 │     │  │  ├─ panels/

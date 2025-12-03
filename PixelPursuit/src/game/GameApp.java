@@ -1,14 +1,15 @@
 package game;
 
 import javax.swing.SwingUtilities;
-import game.ui.windows.LogInWindow;
+import game.ui.WindowManager;
 
 public class GameApp {
     
-	// Game Launch - Run file to launch PixelPursuit
-	public static void main(String[] args) {
+    // Game Launch - Run file to launch PixelPursuit
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new LogInWindow();
+            WindowManager windowManager = new WindowManager();
+            windowManager.showLoginWindow();
         });
     }
 }
