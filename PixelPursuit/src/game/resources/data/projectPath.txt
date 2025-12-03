@@ -1,76 +1,76 @@
 PixelPursuit/
 ├─ src/
 │  └─ game/
-│     ├─ GameApp.java
+│     ├─ ✅GameApp.java
 │     │
 │     ├─ account/
-│     │  ├─ Account.java
-│     │  └─ AccountManager.java
+│     │  ├─ ❎Account.java
+│     │  └─ ❎AccountManager.java
 │     │
 │     ├─ cosmetics/
-│     │  └─ PlayerCosmetics.java
+│     │  └─ ❎PlayerCosmetics.java
 │     │
 │     ├─ gameplay/
-│     │  ├─ Chaser.java
-│     │  ├─ ChaserAI.java
-│     │  ├─ SimpleChaserAI.java
-│     │  ├─ Runner.java
-│     │  └─ Session.java
+│     │  ├─ ❎Chaser.java ❎
+│     │  ├─ ❎ChaserAI.java ❎
+│     │  ├─ ❎SimpleChaserAI.java
+│     │  ├─ ❎Runner.java
+│     │  └─ ❎Session.java
 │     │
 │     ├─ persistence/
-│     │  ├─ Leaderboard.java
-│     │  └─ LeaderboardEntry.java
+│     │  ├─ ❎Leaderboard.java
+│     │  └─ ❎LeaderboardEntry.java
 │     │
 │     ├─ resources/
 │     │  ├─ data/
-│     │  │  ├─ accounts.txt
-│     │  │  ├─ mazes.txt
-│     │  │  ├─ projectPath.txt
-│     │  │  └─ toDo.txt        (notes about UI/components/windows)
+│     │  │  ├─ ❎accounts.txt
+│     │  │  ├─ ❎mazes.txt
+│     │  │  ├─ ❎projectPath.txt
+│     │  │  └─ ❎toDo.txt       
 │     │  │
 │     │  ├─ font/
-│     │  │  └─ PressStart2P-Regular.ttf
+│     │  │  └─ ❎PressStart2P-Regular.ttf
 │     │  │
 │     │  └─ images/
-│     │     └─ **ALL IMAGE FILES**
+│     │     └─ ❎**ALL IMAGE FILES**
 │     │
 │     ├─ scoring/
-│     │  ├─ ScoreSystem.java
-│     │  ├─ Multiplier.java
-│     │  └─ SessionResult.java
+│     │  ├─ ❎ScoreSystem.java
+│     │  ├─ ❎Multiplier.java
+│     │  └─ ❎SessionResult.java
 │     │
 │     ├─ settings/
-│     │  ├─ Difficulty.java
-│     │  └─ GameConfig.java
+│     │  ├─ ❎Difficulty.java
+│     │  └─ ❎GameConfig.java
 │     │
 │     ├─ ui/
-│     │  ├─ WindowManager.java
+│     │  ├─ ❎WindowManager.java
 │     │  │
 │     │  ├─ theme/
-│     │  │  ├─ Assets.java
-│     │  │  ├─ GameFonts.java
-│     │  │  └─ UiColors.java
+│     │  │  ├─ ❎Assets.java
+│     │  │  ├─ ❎GameFonts.java
+│     │  │  └─ ❎UiColors.java
 │     │  │
 │     │  ├─ components/
 │     │  │  ├─ panels/
-│     │  │  │  ├─ BackgroundPanel.java
-│     │  │  │  ├─ GamePanel.java
-│     │  │  │  └─ GoldDisplayPanel.java
+│     │  │  │  ├─ ❎BackgroundPanel.java
+│     │  │  │  ├─ ❎GamePanel.java
+│     │  │  │  └─ ❎GoldDisplayPanel.java
 │     │  │  └─ controls/
-│     │  │     ├─ RoundedHoverButton.java
-│     │  │     ├─ RoundedPasswordField.java
-│     │  │     └─ RoundedTextField.java
+│     │  │     ├─ ❎RoundedHoverButton.java
+│     │  │     ├─ ❎RoundedPasswordField.java
+│     │  │     └─ ❎RoundedTextField.java
 │     │  │
 │     │  └─ windows/
-│     │     ├─ CustomizeWindow.java
-│     │     ├─ GameWindow.java
-│     │     ├─ LeaderboardWindow.java
-│     │     ├─ LogInWindow.java
-│     │     ├─ MainMenuWindow.java
-│     │     └─ ShopWindow.java
+│     │     ├─ ❎CustomizeWindow.java
+│     │     ├─ ❎GameWindow.java
+│     │     ├─ ❎LeaderboardWindow.java
+│     │     ├─ ❎LogInWindow.java
+│     │     ├─ ❎MainMenuWindow.java
+│     │     └─ ❎ShopWindow.java
 │     │
 │     └─ world/
-│        ├─ Cell.java
-│        └─ Maze.java
+│        ├─ ❎Cell.java
+│        └─ ❎Maze.java
 │
 └─ (Eclipse / Git metadata: .project, .classpath, .gitignore, etc.)

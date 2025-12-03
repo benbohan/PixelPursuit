@@ -3,6 +3,7 @@ package game.account;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import game.cosmetics.PlayerCosmetics;
 
 public class AccountManager {
 
@@ -89,13 +90,14 @@ public class AccountManager {
         }
 
         // New account: 0 currencies / default equips / no unlocks
-        Account acc = new Account(username, password, 0, 0, 0, 0, 0.0, 0L, 0L, 0L);
+        Account acc = new Account(username, password, 0, 0, 0, 0, 0.0, 14, 0, 0, 0L);
+        PlayerCosmetics.unlockColor(acc, 14);
         accounts.put(username, acc);
         saveAccounts();
         return acc;
     }
 
-    // Log in: Returns Account OR null if wrong Username/Password.
+	// Log in: Returns Account OR null if wrong Username/Password.
     public Account login(String username, String password) {
         Account acc = accounts.get(username);
         if (acc == null) return null;

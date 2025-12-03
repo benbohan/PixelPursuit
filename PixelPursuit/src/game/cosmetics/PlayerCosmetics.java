@@ -10,6 +10,7 @@ public class PlayerCosmetics {
     // ---------- COLOR IDS ----------
 
     // Bit positions for unlockable runner colors (0-14)
+	// 15 colors, 5 rows of 3 (last color = DEFAULT)
     public static final int COLOR_RED        = 0;
     public static final int COLOR_ORANGE     = 1;
     public static final int COLOR_YELLOW     = 2;
@@ -28,27 +29,30 @@ public class PlayerCosmetics {
     
     // ---------- COSMETIC IDS ----------
     
-    // Bit positions for unlockable runner cosmetics (15-27)
+    // Bit positions for unlockable runner cosmetics (15-27) 
+    // 12 items, 3 rows of 4 (last row super expensive)
     public static final int COSMETIC_TOP_HAT     = 15;
     public static final int COSMETIC_BEANIE      = 16;
     public static final int COSMETIC_CROWN       = 17;
     public static final int COSMETIC_HEADBAND    = 18;
     public static final int COSMETIC_SHADES      = 19;
     public static final int COSMETIC_HEADPHONES  = 20;
-    public static final int COSMETIC_SANTA_HAT   = 21;
     public static final int COSMETIC_CAT_PET     = 22;
     public static final int COSMETIC_DOG_PET     = 23;
     
     public static final int COSMETIC_GOLD_SHADES = 24;
-    public static final int COSMETIC_DIAMOND_SHADES = 25;
-    public static final int COSMETIC_GOLD_HAT = 26;
+    public static final int COSMETIC_GOLD_HAT = 25;
+    public static final int COSMETIC_DIAMOND_SHADES = 26;
     public static final int COSMETIC_DIAMOND_HAT = 27;
     
     // ---------- MULTIPLIER IDS ----------
     
+    // Bit positions for unlockable multipliers (28-31)
+    // 4 items (not stackable)
     public static final int MULTIPLIER_2X = 28;
-    public static final int MULTIPLIER_5X = 29;
-    public static final int MULTIPLIER_10X = 30;
+    public static final int MULTIPLIER_3X = 29;
+    public static final int MULTIPLIER_5X = 30;
+    public static final int MULTIPLIER_10X = 31;
     
 
     // Map color IDs to actual Colors
@@ -151,6 +155,7 @@ public class PlayerCosmetics {
 
     // Reference unlocks in Multiplier.java
     public static boolean has2x(Account acc)  { return hasMultiplier(acc, MULTIPLIER_2X); }
+    public static boolean has3x(Account acc)  { return hasMultiplier(acc, MULTIPLIER_3X); }
     public static boolean has5x(Account acc)  { return hasMultiplier(acc, MULTIPLIER_5X); }
     public static boolean has10x(Account acc) { return hasMultiplier(acc, MULTIPLIER_10X); }
 
@@ -188,6 +193,25 @@ public class PlayerCosmetics {
         if (acc == null) return -1;
         int id = (int) acc.getCosmetic();
         return hasCosmetic(acc, id) ? id : -1;
+    }
+    
+    // ---------- EQUIPPED MULTIPLIER ----------
+    
+    public static int getEquippedMultiplierId(Account acc) {
+        if (acc == null) return -1;
+        int id = (int) acc.getMultiplier();
+        return hasMultiplier(acc, id) ? id : -1;
+    }
+
+    public static int getEquippedMultiplierValue(Account acc) {
+        int id = getEquippedMultiplierId(acc);
+        switch (id) {
+            case MULTIPLIER_2X:  return 2;
+            case MULTIPLIER_3X:  return 3;
+            case MULTIPLIER_5X:  return 5;
+            case MULTIPLIER_10X: return 10;
+            default:             return 1;
+        }
     }
 
     // ---------- COLOR LOOKUP ----------

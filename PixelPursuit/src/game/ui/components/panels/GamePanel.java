@@ -147,7 +147,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
         Color runnerColor  = (account != null)
                 ? PlayerCosmetics.getRunnerColor(account)
-                : UiColors.PLAYER_DEFAULT;
+                : UiColors.PLAYER_DEFAULT_GRAY;
 
         Color chaserColor  = UiColors.CHASER_DEFAULT;
 

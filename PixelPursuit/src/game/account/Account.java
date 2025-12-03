@@ -8,13 +8,14 @@ public class Account {
     private int vaultGold;
     private int vaultDiamonds;
     private double bestTime;
-    private long color;    // equipped color (0-15)
-    private long cosmetic; // equipped cosmetic (0-15)
-    private long unlocks;  // unlocked cosmetics bit mask
+    private int color;       // equipped color      (0-14)
+    private int cosmetic;    // equipped cosmetic   (15-27)
+    private int multiplier;  // equipped multiplier (27-31)
+    private long unlocks;    // unlocks digit mask  (32-digit)    ex: 00000000000000000000000000000000
 
     // Constructor - New Account
     public Account(String username, String password, int freeGold, int freeDiamonds, int vaultGold, 
-    				int vaultDiamonds, double bestTime, long color, long cosmetic, long unlocks) {
+    				int vaultDiamonds, double bestTime, int color, int cosmetic, int multiplier, long unlocks) {
         this.username = username;
         this.password = password;
         this.freeGold = freeGold;
@@ -24,6 +25,7 @@ public class Account {
         this.bestTime = bestTime;
         this.color = color;
         this.cosmetic = cosmetic;
+        this.multiplier = multiplier;
         this.unlocks = unlocks;
     }
     
@@ -35,8 +37,9 @@ public class Account {
     public int getVaultGold()     { return vaultGold; }
     public int getVaultDiamonds() { return vaultDiamonds; }
     public double getBestTime()   { return bestTime; }
-    public long getColor()        { return color; }
-    public long getCosmetic()     { return cosmetic; }
+    public int getColor()         { return color; }
+    public int getCosmetic()      { return cosmetic; }
+    public int getMultiplier()    { return multiplier; }
     public long getUnlocks()      { return unlocks; }
 
     // Setters
@@ -45,8 +48,9 @@ public class Account {
     public void setVaultGold(int vaultGold)         { this.vaultGold = vaultGold; }
     public void setVaultDiamonds(int vaultDiamonds) { this.vaultDiamonds = vaultDiamonds; }
     public void setBestTime(double bestTime)        { this.bestTime = bestTime; }
-    public void setColor(long color)                { this.color = color; }
-    public void setCosmetic(long cosmetic)          { this.cosmetic = cosmetic; }
+    public void setColor(int color)                 { this.color = color; }
+    public void setCosmetic(int cosmetic)           { this.cosmetic = cosmetic; }
+    public void setMultiplier(int multiplier)       { this.multiplier = multiplier; }
     public void setUnlocks(long unlocks)            { this.unlocks = unlocks; }
     
     
@@ -54,40 +58,34 @@ public class Account {
     public String toFileLine() {
         return username + ";" + password + ";" + freeGold + ";" + freeDiamonds + ";" + 
         		vaultGold + ";" + vaultDiamonds + ";" + bestTime + ";" + color + ";" + 
-        		cosmetic + ";" + unlocks;
+        		cosmetic + ";" + multiplier + ";" + unlocks;
     }
 
     // Parse from one line in "accounts.txt"
     public static Account fromFileLine(String line) {
         String[] parts = line.split(";");
         
-        // Initialize values
-        int freeGold = 0;
-        int vaultGold = 0;
-        int freeDiamonds = 0;
-        int vaultDiamonds = 0;
-        double bestTime = 0.0;
-        long color = 0L;
-        long cosmetic = 0L;
-        long unlocks = 0L;
+        // Invaild account line check
+        if (parts.length < 11) {
+            throw new IllegalArgumentException("Invalid account line: " + line);
+        }
         
         /* Format all player info (1 Line)
-         * username;password;
-         * freeGold;freeDiamonds;vaultGold;vaultDiamonds;
-         * bestTime;color;cosmetic;unlocks
-         */
-        String username = parts[0];
-        String password = parts[1];
-        freeGold      = Integer.parseInt(parts[2]);
-        freeDiamonds  = Integer.parseInt(parts[3]);
-        vaultGold     = Integer.parseInt(parts[4]);
-        vaultDiamonds = Integer.parseInt(parts[5]);
-        bestTime      = Double.parseDouble(parts[6]);
-        color         = Long.parseLong(parts[7]);
-        cosmetic      = Long.parseLong(parts[8]);
-        unlocks       = Long.parseLong(parts[9]);
+         * username;password;freeGold;freeDiamonds;vaultGold;vaultDiamonds;
+         * bestTime;color;cosmetic;multiplier; unlocks */
+        String username    = parts[0];
+        String password    = parts[1];
+        int freeGold       = Integer.parseInt(parts[2]);
+        int freeDiamonds   = Integer.parseInt(parts[3]);
+        int vaultGold      = Integer.parseInt(parts[4]);
+        int vaultDiamonds  = Integer.parseInt(parts[5]);
+        double bestTime    = Double.parseDouble(parts[6]);
+        int color          = Integer.parseInt(parts[7]);
+        int cosmetic       = Integer.parseInt(parts[8]);
+        int multiplier     = Integer.parseInt(parts[9]);
+        long unlocks       = Long.parseLong(parts[10]);
         
         return new Account(username, password, freeGold, freeDiamonds, vaultGold, 
-        					vaultDiamonds, bestTime, color, cosmetic, unlocks);
+        					vaultDiamonds, bestTime, color, cosmetic, multiplier, unlocks);
     }
 }
