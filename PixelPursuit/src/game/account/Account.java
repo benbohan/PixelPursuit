@@ -50,7 +50,7 @@ public class Account {
     public void setUnlocks(long unlocks)            { this.unlocks = unlocks; }
     
     
-    // Line setup for "accounts.txt" storage
+    // Line setup for accounts.txt storage
     public String toFileLine() {
         return username + ";" + password + ";" + freeGold + ";" + freeDiamonds + ";" + 
         		vaultGold + ";" + vaultDiamonds + ";" + bestTime + ";" + color + ";" + 
@@ -72,7 +72,8 @@ public class Account {
         long unlocks = 0L;
         
         /* Format all player info (1 Line)
-         * username;password;freeGold;freeDiamonds;vaultGold;vaultDiamonds;
+         * username;password;
+         * freeGold;freeDiamonds;vaultGold;vaultDiamonds;
          * bestTime;color;cosmetic;unlocks
          */
         String username = parts[0];
