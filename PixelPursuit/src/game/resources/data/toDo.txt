@@ -4,7 +4,7 @@ TODO:
 	- add diamonds as currency
 	- make the gold only the ones picked up, right now gold counts up with timer (only add timer gold at the end)
 - 
-- Chaser:
+- Chaser: (Lucius)
 	- Chaser AI stuck on walls, while following player, only goes towards player
 	- Maybe multiple chasers, more pathways (larger maze, more ways to escape)
 	- Chasers run maze, only target player within small zone
