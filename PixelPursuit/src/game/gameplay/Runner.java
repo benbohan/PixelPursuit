@@ -10,97 +10,139 @@ import game.world.Maze;
  */
 public class Runner {
 
-    private final Maze maze;
-    private int x;
-    private int y;
-    private boolean alive = true;
+	private final Maze maze;
+	private int x;
+	private int y;
+	private boolean alive = true;
 
-    // Current movement direction for "glide" behavior
-    // (-1,0) left, (1,0) right, (0,-1) up, (0,1) down, (0,0) = stopped
-    private int dirX = 0;
-    private int dirY = 0;
+	// Current movement direction for "glide" behavior
+	// (-1,0) left, (1,0) right, (0,-1) up, (0,1) down, (0,0) = stopped
+	private int dirX = 0;
+	private int dirY = 0;
 
-    public Runner(Maze maze, int startX, int startY) {
-        this.maze = maze;
-        if (!maze.inBounds(startX, startY)) {
-            throw new IllegalArgumentException("Runner start out of bounds");
-        }
+	private int desiredDirX = 0;
+	private int desiredDirY = 0;
 
-        this.x = startX;
-        this.y = startY;
+	public Runner(Maze maze, int startX, int startY) {
+		this.maze = maze;
+		if (!maze.inBounds(startX, startY)) {
+			throw new IllegalArgumentException("Runner start out of bounds");
+		}
 
-        maze.getCell(x, y).addEntity(this);
-    }
+		this.x = startX;
+		this.y = startY;
 
-    // --- position ---
+		maze.getCell(x, y).addEntity(this);
+	}
 
-    public int getX() { return x; }
-    public int getY() { return y; }
+	// --- position ---
 
-    public Cell getCell() {
-        return maze.getCell(x, y);
-    }
+	public int getX() {
+		return x;
+	}
 
-    public boolean isAlive() {
-        return alive;
-    }
+	public int getY() {
+		return y;
+	}
 
-    public void kill() {
-        alive = false;
-    }
+	public Cell getCell() {
+		return maze.getCell(x, y);
+	}
 
-    // --- direction / glide control ---
+	public boolean isAlive() {
+		return alive;
+	}
 
-    /** Set the direction for continuous movement. (0,0) means stop. */
-    public void setDirection(int dx, int dy) {
-        this.dirX = dx;
-        this.dirY = dy;
-    }
+	public void kill() {
+		alive = false;
+	}
 
-    public int getDirX() { return dirX; }
-    public int getDirY() { return dirY; }
+	// --- direction / glide control ---
 
-    /** Stop moving (used if you want a key to cancel glide). */
-    public void stop() {
-        this.dirX = 0;
-        this.dirY = 0;
-    }
+	/** Set the direction for continuous movement. (0,0) means stop. */
+	public void setDirection(int dx, int dy) {
+		this.desiredDirX = dx;
+		this.desiredDirY = dy;
+	}
 
-    /**
-     * Called each tick by the game loop.
-     * Moves one cell in the current direction, if any.
-     */
-    public void step() {
-        if (!alive) return;
-        if (dirX == 0 && dirY == 0) return;  // no movement
-        moveBy(dirX, dirY);
-    }
+	public int getDirX() {
+		return dirX;
+	}
 
-    /**
-     * Try to move by (dx, dy) one step.
-     * Checks bounds + walkable; does nothing if blocked.
-     */
-    public void moveBy(int dx, int dy) {
-        if (!alive) return;
+	public int getDirY() {
+		return dirY;
+	}
 
-        int newX = x + dx;
-        int newY = y + dy;
+	/** Stop moving (used if you want a key to cancel glide). */
+	public void stop() {
+		this.dirX = 0;
+		this.dirY = 0;
+		this.desiredDirX = 0;
+		this.desiredDirY = 0;
+	}
 
-        if (!maze.inBounds(newX, newY)) {
-            return; // out of maze
-        }
+	/**
+	 * Called each tick by the game loop. Moves one cell in the current direction,
+	 * if any.
+	 */
+	public void step() {
+		if (!alive)
+			return;
+		if (desiredDirX != dirX || desiredDirY != dirY) {
+	        if (canMove(desiredDirX, desiredDirY)) {
+	            dirX = desiredDirX;
+	            dirY = desiredDirY;
+	        }
+	    }
 
-        Cell target = maze.getCell(newX, newY);
-        if (!target.isWalkable()) {
-            return; // wall later
-        }
+	    // Move one step in the current direction if possible.
+	    if (dirX == 0 && dirY == 0) {
+	        return;  // no current direction
+	    }
 
-        // Move between cells
-        Cell current = maze.getCell(x, y);
-        current.removeEntity(this);
-        target.addEntity(this);
+	    if (canMove(dirX, dirY)) {
+	        moveBy(dirX, dirY);
+	    } else {
+	        // Ran straight into a wall, stop
+	        dirX = 0;
+	        dirY = 0;
+	    }
+	}
 
-        x = newX;
-        y = newY;
-    }
+	private boolean canMove(int dx, int dy) {
+		if (dx == 0 && dy == 0)
+			return false;
+
+		int newX = x + dx;
+		int newY = y + dy;
+
+		if (!maze.inBounds(newX, newY)) {
+			return false;
+		}
+		if (!maze.getCell(newX, newY).isWalkable()) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Try to move by (dx, dy) one step. Checks bounds + walkable; does nothing if
+	 * blocked.
+	 */
+	public void moveBy(int dx, int dy) {
+	    if (!alive) return;
+	    if (!canMove(dx, dy)) return;
+
+	    int newX = x + dx;
+	    int newY = y + dy;
+
+	    Cell current = maze.getCell(x, y);
+	    Cell target  = maze.getCell(newX, newY);
+
+	    current.removeEntity(this);
+	    target.addEntity(this);
+
+	    x = newX;
+	    y = newY;
+	}
 }

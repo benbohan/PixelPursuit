@@ -40,6 +40,12 @@ public class GamePanel extends JPanel implements KeyListener {
     private Image goldScaled;
     private int goldForCellSize = -1;
     private int goldDrawSize = 0;
+    
+    // Diamond texture for diamond tiles
+    private Image diamondOriginal;
+    private Image diamondScaled;
+    private int diamondForCellSize = -1;
+    private int diamondDrawSize = 0;
 
     // Movement timer: smaller delay = faster glide
     private final Timer movementTimer;
@@ -71,6 +77,15 @@ public class GamePanel extends JPanel implements KeyListener {
             ).getImage();
         } catch (Exception e) {
             goldOriginal = null;
+        }
+        
+     // Load the diamond texture (diamond.png in /game/resources/images/)
+        try {
+            diamondOriginal = new ImageIcon(
+                    GamePanel.class.getResource("/game/resources/images/diamond.png")
+            ).getImage();
+        } catch (Exception e) {
+            diamondOriginal = null;
         }
 
         // Movement timer = our "clock"
@@ -168,6 +183,15 @@ public class GamePanel extends JPanel implements KeyListener {
             );
             goldForCellSize = cellSize;
         }
+        
+     // --- Scale diamond texture similarly ---
+        if (diamondOriginal != null && cellSize > 0 && diamondForCellSize != cellSize) {
+            diamondDrawSize = (int) Math.round(cellSize * 0.7);
+            diamondScaled = diamondOriginal.getScaledInstance(
+                    diamondDrawSize, diamondDrawSize, Image.SCALE_SMOOTH
+            );
+            diamondForCellSize = cellSize;
+        }
 
         // Draw cells
         Shape oldClip = g2.getClip();
@@ -215,6 +239,13 @@ public class GamePanel extends JPanel implements KeyListener {
                     int gx = px + (cellSize - goldDrawSize) / 2;
                     int gy = py + (cellSize - goldDrawSize) / 2;
                     g2.drawImage(goldScaled, gx, gy, null);
+                }
+                
+                // DIAMOND
+                if (!cell.isWall() && cell.hasDiamond() && diamondScaled != null) {
+                    int dx = px + (cellSize - diamondDrawSize) / 2;
+                    int dy = py + (cellSize - diamondDrawSize) / 2;
+                    g2.drawImage(diamondScaled, dx, dy, null);
                 }
 
                 // Grid line

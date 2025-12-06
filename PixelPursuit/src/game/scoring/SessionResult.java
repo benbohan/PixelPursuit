@@ -16,6 +16,8 @@ public final class SessionResult {
     private final int pickupGold;   // from pickups
     private final int baseGold;     // timeGold + pickupGold
     private final int finalGold;    // baseGold * multiplier
+    private final int diamondsCollected;
+    private final int finalDiamonds;
 
     private final Multiplier multiplier;
     private final Difficulty difficulty;
@@ -26,6 +28,8 @@ public final class SessionResult {
                          int pickupGold,
                          int baseGold,
                          int finalGold,
+                         int diamondsCollected,
+                         int finalDiamonds,
                          Multiplier multiplier,
                          Difficulty difficulty,
                          boolean escaped) {
@@ -35,6 +39,10 @@ public final class SessionResult {
         this.pickupGold = pickupGold;
         this.baseGold = baseGold;
         this.finalGold = finalGold;
+        
+        this.diamondsCollected = diamondsCollected;
+        this.finalDiamonds = finalDiamonds;
+        
         this.multiplier = multiplier;
         this.difficulty = difficulty;
         this.escaped = escaped;
@@ -59,7 +67,15 @@ public final class SessionResult {
     public int getFinalGold() {
         return finalGold;
     }
+    
+    public int getDiamondsCollected() {
+        return diamondsCollected;
+    }
 
+    public int getFinalDiamonds() {
+        return finalDiamonds;
+    }
+    
     public Multiplier getMultiplier() {
         return multiplier;
     }

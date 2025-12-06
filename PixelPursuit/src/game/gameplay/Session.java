@@ -26,6 +26,7 @@ public class Session {
 	private int runGold = 0; // total = timeGold + pickupGold
 	private int timeGold = 0; // from surviving
 	private int pickupGold = 0; // from gold on the map
+	private int pickupDiamonds = 0;
 
 	// Chaser movement pacing
 	private double chaserMoveAccumulator = 0.0;
@@ -34,7 +35,8 @@ public class Session {
 
 	// Gold spawning pacing
 	private double goldSpawnAccumulator = 0.0;
-	private static final double GOLD_SPAWN_INTERVAL = GameConfig.GOLD_SPAWN_INTERVAL_SEC; // seconds between spawns
+	private final double goldSpawnInterval;
+	private final double diamondChance;
 
 	// Survival gold pacing
 	private double survivalGoldAccumulator = 0.0;
@@ -46,6 +48,9 @@ public class Session {
 	public Session(Maze maze, Runner runner) {
 		this.maze = maze;
 		this.runner = runner;
+
+		this.goldSpawnInterval = GameConfig.getGoldSpawnIntervalForCurrentDifficulty();
+		this.diamondChance = GameConfig.getDiamondChanceForCurrentDifficulty();
 	}
 
 	public Maze getMaze() {
@@ -83,6 +88,10 @@ public class Session {
 	/** Gold earned purely from pickups. */
 	public int getPickupGold() {
 		return pickupGold;
+	}
+	
+	public int getPickupDiamonds() {
+	    return pickupDiamonds;
 	}
 
 	public boolean isRunning() {
@@ -125,6 +134,14 @@ public class Session {
 			pickupGold += amount;
 			runGold += amount;
 		}
+		if (rc.hasDiamond()) {
+		    rc.takeDiamond();
+		    pickupDiamonds++;
+
+		    int value = GameConfig.DIAMOND_GOLD_VALUE;
+		    pickupGold += value;   // treat as bonus score
+		    runGold   += value;
+		}
 
 		// --- 4) Move chasers at a slower rate ---
 		chaserMoveAccumulator += deltaSeconds;
@@ -138,9 +155,9 @@ public class Session {
 
 		// --- 5) Spawn random gold occasionally ---
 		goldSpawnAccumulator += deltaSeconds;
-		if (goldSpawnAccumulator >= GOLD_SPAWN_INTERVAL) {
-			goldSpawnAccumulator -= GOLD_SPAWN_INTERVAL;
-			spawnRandomGold();
+		if (goldSpawnAccumulator >= goldSpawnInterval) {
+			goldSpawnAccumulator -= goldSpawnInterval;
+			spawnRandomLoot();
 		}
 
 		// --- 6) Collision: chaser on runner? ---
@@ -152,13 +169,20 @@ public class Session {
 			}
 		}
 	}
+	
+	private boolean isOuterRing(int x, int y, int w, int h) {
+	    int marginX = 4; // columns near left/right edges
+	    int marginY = 3; // rows near top/bottom
+
+	    return (x < marginX || x >= w - marginX ||
+	            y < marginY || y >= h - marginY);
+	}
 
 	/** Spawn a single gold piece in a random walkable cell. */
-	private void spawnRandomGold() {
+	private void spawnRandomLoot() {
 		int w = maze.getWidth();
 		int h = maze.getHeight();
 
-		// Try up to 100 random spots per spawn
 		for (int tries = 0; tries < 100; tries++) {
 			int x = rng.nextInt(w);
 			int y = rng.nextInt(h);
@@ -174,11 +198,25 @@ public class Session {
 			Cell c = maze.getCell(x, y);
 			if (!c.isWalkable())
 				continue;
-			if (c.hasGold())
+			if (c.hasGold() || c.hasDiamond())
 				continue;
 
-			c.setGold(1); // one gold for now
-			break;
+			boolean outer = isOuterRing(x, y, w, h);
+
+	        // 60% of the time we *insist* on an outer-ring tile
+	        if (rng.nextDouble() < 0.60 && !outer) {
+	            continue;
+	        }
+
+	        // Decide whether this spawn is a diamond.
+	        // Diamonds only spawn on outer ring to really reward exploration.
+	        boolean wantDiamond = (rng.nextDouble() < diamondChance);
+	        if (wantDiamond) {
+	            c.setDiamond(true);
+	        } else {
+	            c.setGold(1);
+	        }
+	        break;
 		}
 	}
 }

@@ -23,6 +23,8 @@ public class Maze {
 
     private int entranceX, entranceY;
     private int exitX, exitY;
+    
+    private final Random rng = new Random();
 
     // Path relative to PROJECT ROOT:
     // PixelPursuit/src/game/resources/data/mazes.txt
@@ -54,9 +56,9 @@ public class Maze {
             }
         }
 
-        // Try to load a preset; if that fails, fall back to a simple layout.
+     // Try to load a preset; if that fails, fall back to a random layout.
         if (!loadRandomPresetFromFile()) {
-            generateBasicLayout();
+            generateRandomLayout();
         }
     }
 
@@ -152,9 +154,16 @@ public class Maze {
             return false;
         }
 
-        Random rand = new Random();
-        String chosen = lines.get(rand.nextInt(lines.size()));
+        // Pick a random entry
+        String chosen = lines.get(rng.nextInt(lines.size()));
 
+        // Special case: "RANDOM" means use the procedural generator
+        if ("RANDOM".equalsIgnoreCase(chosen)) {
+            generateRandomLayout();
+            return true;
+        }
+
+        // Otherwise interpret it as an ASCII maze line.
         return applyMapLine(chosen);
     }
 
@@ -178,6 +187,7 @@ public class Maze {
                 Cell c = getCell(x, y);
                 c.setWalkable(true);
                 c.setGold(0);
+                c.setDiamond(false);
             }
         }
 
@@ -276,6 +286,169 @@ public class Maze {
         for (int y = 1; y < h - 1; y++) {
             if (y == midRow - 2 || y == midRow + 2) continue;
             getCell(wallCol2, y).setWall(true);
+        }
+    }
+    
+    /**
+     * Procedurally generate a maze using a DFS carving algorithm plus a few
+     * extra openings to create multiple paths.
+     *
+     * Entrance is on the left mid row, exit on the right mid row (same as before).
+     */
+    private void generateRandomLayout() {
+        int w = getWidth();
+        int h = getHeight();
+
+        // 1) Start with everything as a wall and no gold/diamonds.
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                Cell c = getCell(x, y);
+                c.setWall(true);
+                c.setGold(0);
+                c.setDiamond(false);
+            }
+        }
+
+        // 2) Outer border remains walls. Carve entrance and exit openings.
+        int midRow = h / 2;
+        entranceX = 0;
+        entranceY = midRow;
+        exitX = w - 1;
+        exitY = midRow;
+
+        getCell(entranceX, entranceY).setWalkable(true);
+        getCell(exitX, exitY).setWalkable(true);
+
+        // 3) Choose a starting cell just inside the entrance.
+        // Use odd coordinates for nicer wall structure.
+        int startX = 1;
+        int startY = entranceY;
+        if (startY <= 0) startY = 1;
+        if (startY >= h - 1) startY = h - 2;
+        if (startY % 2 == 0 && startY + 1 < h - 1) {
+            startY++;
+        }
+
+        boolean[][] visited = new boolean[h][w];
+        carveMazeDFS(startX, startY, visited);
+
+        // 4) Ensure the cell just inside the exit is open and connected.
+        int exitInnerX = w - 2;
+        int exitInnerY = entranceY;
+        getCell(exitInnerX, exitInnerY).setWalkable(true);
+
+        // 5) Add some loops to avoid a single long snake.
+        //    Slightly more loops = slightly less dense.
+        addRandomLoops(w, h, (w * h) / 10);
+
+        // 6) Soften walls across the whole map (more open pockets),
+        //    but bias toward being more open on the right side (near exit).
+        softenWalls(w, h);
+    }
+
+    /**
+     * Depth-first maze carving.
+     *
+     * We treat only odd interior coordinates as "rooms" and carve 2 cells at a time
+     * so walls stay at least 1 cell thick between corridors.
+     */
+    private void carveMazeDFS(int x, int y, boolean[][] visited) {
+        visited[y][x] = true;
+        getCell(x, y).setWalkable(true);
+
+        // Moves are 2 cells at a time (so we leave walls between rooms)
+        int[][] dirs = { { 2, 0 }, { -2, 0 }, { 0, 2 }, { 0, -2 } };
+        shuffleDirections(dirs);
+
+        for (int[] d : dirs) {
+            int nx = x + d[0];
+            int ny = y + d[1];
+
+            // stay inside interior, leave border as walls
+            if (nx <= 0 || nx >= width - 1 || ny <= 0 || ny >= height - 1) {
+                continue;
+            }
+            if (visited[ny][nx]) {
+                continue;
+            }
+
+            // Carve the wall cell between (x,y) and (nx,ny)
+            int wx = x + d[0] / 2;
+            int wy = y + d[1] / 2;
+            getCell(wx, wy).setWalkable(true);
+
+            carveMazeDFS(nx, ny, visited);
+        }
+    }
+  
+
+    /**
+     * Fisher–Yates shuffle for direction arrays.
+     */
+    private void shuffleDirections(int[][] dirs) {
+        for (int i = dirs.length - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int[] tmp = dirs[i];
+            dirs[i] = dirs[j];
+            dirs[j] = tmp;
+        }
+    }
+
+    /**
+     * Punch random holes in walls that already have at least two open neighbors.
+     * This turns a perfect maze into one with loops / alternate routes.
+     */
+    private void addRandomLoops(int w, int h, int attempts) {
+        for (int i = 0; i < attempts; i++) {
+            int x = 1 + rng.nextInt(w - 2);
+            int y = 1 + rng.nextInt(h - 2);
+
+            Cell c = getCell(x, y);
+            if (!c.isWall()) {
+                continue; // already open, skip
+            }
+
+            int openNeighbors = 0;
+            if (getCell(x + 1, y).isWalkable()) openNeighbors++;
+            if (getCell(x - 1, y).isWalkable()) openNeighbors++;
+            if (getCell(x, y + 1).isWalkable()) openNeighbors++;
+            if (getCell(x, y - 1).isWalkable()) openNeighbors++;
+
+            // Open walls that touch corridors to build loops.
+            // Slight randomness so layouts stay varied.
+            if (openNeighbors >= 1 && rng.nextDouble() < 0.6) {
+                c.setWalkable(true);
+            }
+        }
+    }  
+    
+    private void softenWalls(int w, int h) {
+        for (int x = 1; x < w - 1; x++) {
+            double t = (double) x / (w - 1);  // 0.0 at left, 1.0 at right
+
+            // Base chance to soften on the left, higher on the right
+            double baseProb = 0.10;          // ~10% chance left side
+            double extraProb = 0.18;         // up to ~28% on the far right
+            double openProb = baseProb + extraProb * t;
+
+            for (int y = 1; y < h - 1; y++) {
+                Cell c = getCell(x, y);
+                if (!c.isWall()) {
+                    continue;
+                }
+
+                int openNeighbors = 0;
+                if (getCell(x + 1, y).isWalkable()) openNeighbors++;
+                if (getCell(x - 1, y).isWalkable()) openNeighbors++;
+                if (getCell(x, y + 1).isWalkable()) openNeighbors++;
+                if (getCell(x, y - 1).isWalkable()) openNeighbors++;
+
+                // Only soften walls that are already adjacent to corridors,
+                // and more aggressively if there are 2+ open neighbors.
+                if (openNeighbors >= 1 && rng.nextDouble() < openProb) {
+                    c.setWalkable(true);
+                }
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import game.settings.GameConfig;
  * Scoring model:
  *   - baseGold = timeGold + pickupGold
  *   - finalGold = baseGold * multiplier
+ *   - finalDiamonds = pickupDiamonds * multiplier
  *   - multiplier is 0x on death, 1x on easy escape, 2x on hard escape.
  */
 public final class ScoreSystem {
@@ -30,10 +31,13 @@ public final class ScoreSystem {
         int timeGold   = session.getTimeGold();
         int pickupGold = session.getPickupGold();
         int baseGold   = timeGold + pickupGold;
+        int diamondsCollected = session.getPickupDiamonds();
+
 
         Multiplier multiplier = Multiplier.forOutcome(difficulty, escaped);
 
         int finalGold = (int) Math.round(baseGold * multiplier.getValue());
+        int finalDiamonds = (int) Math.round(diamondsCollected * multiplier.getValue());
         double timeSeconds = session.getElapsedTimeSeconds();
 
         return new SessionResult(
@@ -42,6 +46,8 @@ public final class ScoreSystem {
                 pickupGold,
                 baseGold,
                 finalGold,
+                diamondsCollected,
+                finalDiamonds,
                 multiplier,
                 difficulty,
                 escaped

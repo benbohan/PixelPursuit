@@ -16,6 +16,7 @@ public class Cell {
     private boolean walkable;
 
     private int gold;
+    private boolean diamond;
 
     // Later these will be Runner / Chaser; for now keep it generic.
     private final List<Object> entities = new ArrayList<>();
@@ -68,6 +69,20 @@ public class Cell {
         int amount = gold;
         gold = 0;
         return amount;
+    }
+    
+    public boolean hasDiamond() {
+        return diamond;
+    }
+
+    public void setDiamond(boolean value) {
+        this.diamond = value;
+    }
+
+    public boolean takeDiamond() {
+        boolean had = diamond;
+        diamond = false;
+        return had;
     }
 
     // --- entities ---
