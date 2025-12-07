@@ -183,4 +183,10 @@ public class LootDisplayPanel extends JPanel {
         int secs = total % 60;
         return String.format("Time: %02d:%02d", mins, secs);
     }
+    
+    // NEW: call this when the account changes (MAIN_MENU vault values)
+    public void updateLoot(int vaultGold, int vaultDiamonds) {
+        setGoldAmount(vaultGold);
+        setDiamondAmount(vaultDiamonds);
+    }
 }

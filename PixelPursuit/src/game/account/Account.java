@@ -11,7 +11,7 @@ public class Account {
     private int color;       // equipped color      (0-14)
     private int cosmetic;    // equipped cosmetic   (15-27)
     private int multiplier;  // equipped multiplier (27-31)
-    private long unlocks;    // unlocks digit mask  (32-digit)    ex: 00000000000000000000000000000000
+    private long unlocks;    // unlocks digit mask  (32-digit)
 
     // Constructor - New Account
     public Account(String username, String password, int freeGold, int freeDiamonds, int vaultGold, 

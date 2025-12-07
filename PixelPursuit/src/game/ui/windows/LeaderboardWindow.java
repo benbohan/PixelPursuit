@@ -46,7 +46,7 @@ public class LeaderboardWindow extends JFrame {
         panel.setOpaque(true);
         panel.setBackground(new Color(30, 30, 30));
 
-        JLabel title = new JLabel("Top 10 Runs");
+        JLabel title = new JLabel("Longest Runs");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(GameFonts.get(28f, Font.BOLD));
         title.setForeground(Color.WHITE);
@@ -100,6 +100,7 @@ public class LeaderboardWindow extends JFrame {
         panel.add(buttonRow);
 
         setContentPane(panel);
+        setVisible(true);
     }
 
     /** Simple mm:ss formatter for leaderboard rows. */

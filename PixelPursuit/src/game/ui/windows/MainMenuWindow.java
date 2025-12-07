@@ -17,6 +17,7 @@ public class MainMenuWindow extends JFrame {
 
     private final WindowManager windowManager;
     private Account currentAccount;
+    private LootDisplayPanel lootDisplay;
 
     private int screenWidth;
     private int screenHeight;
@@ -47,7 +48,7 @@ public class MainMenuWindow extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         screenWidth  = screenSize.width;
         screenHeight = screenSize.height;
-        
+
         Dimension fieldSize = new Dimension(screenWidth / 4, screenHeight / 16);
         buttonHeight        = (int) (fieldSize.height * 0.8);
 
@@ -74,7 +75,10 @@ public class MainMenuWindow extends JFrame {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
 
-        LootDisplayPanel lootDisplay = new LootDisplayPanel(currentAccount.getVaultGold(), currentAccount.getVaultDiamonds());
+        lootDisplay = new LootDisplayPanel(
+                currentAccount.getVaultGold(),
+                currentAccount.getVaultDiamonds()
+        );
 
         JPanel rightBox = new JPanel();
         rightBox.setOpaque(false);
@@ -190,31 +194,9 @@ public class MainMenuWindow extends JFrame {
 
         // Settings
         settingsButton.addActionListener(e -> {
-            Difficulty current = GameConfig.getCurrentDifficulty();
-            Difficulty[] options = Difficulty.values();
-
-            Difficulty choice = (Difficulty) JOptionPane.showInputDialog(
-                    this,
-                    "Select difficulty:",
-                    "Difficulty",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    options,
-                    current
-            );
-
-            if (choice != null) {
-                GameConfig.setCurrentDifficulty(choice);
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Difficulty set to " + choice.getDisplayName()
-                                + "\nHard runs pay out more final gold.",
-                        "Difficulty Updated",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-            }
+            new DifficultyWindow(windowManager);
         });
-
+        
         // Leaderboard
         leaderboardButton.addActionListener(e -> {
             if (windowManager != null) {
@@ -230,5 +212,16 @@ public class MainMenuWindow extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    // -------- Loot refresh for WindowManager --------
+
+    public void refreshLootDisplay() {
+        if (lootDisplay != null && currentAccount != null) {
+            lootDisplay.updateLoot(
+                    currentAccount.getVaultGold(),
+                    currentAccount.getVaultDiamonds()
+            );
+        }
     }
 }

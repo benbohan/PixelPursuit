@@ -8,10 +8,12 @@ import javax.swing.*;
 
 public class WindowManager {
 
+    private MainMenuWindow mainMenuWindow;
+
     private final AccountManager accountManager;
     private Account currentAccount;
 
-    // Optional: keep references if you want to reuse windows
+    // Keep track of whatever window is currently on screen
     private JFrame currentWindow;
 
     public WindowManager() {
@@ -35,8 +37,7 @@ public class WindowManager {
     // --------- Window switching helpers ---------
 
     private void showWindow(JFrame newWindow) {
-        // Close previous window if it exists
-        if (currentWindow != null) {
+        if (currentWindow != null && currentWindow != newWindow) {
             currentWindow.dispose();
         }
         currentWindow = newWindow;
@@ -44,28 +45,49 @@ public class WindowManager {
         currentWindow.setVisible(true);
     }
 
-    // ---- Public APIs used by your windows ----
+    // --------- Public APIs used by your windows ---------
 
     public void showLoginWindow() {
         showWindow(new LogInWindow(this));
     }
 
     public void showMainMenu() {
-        // Assumes currentAccount is already set (e.g., after login)
-        showWindow(new MainMenuWindow(this, currentAccount));
+        // Build once, reuse so we can refresh its loot HUD
+        if (mainMenuWindow == null) {
+            mainMenuWindow = new MainMenuWindow(this, currentAccount);
+        }
+        showWindow(mainMenuWindow);
     }
 
     public void showGameWindow() {
-        // You can pass currentAccount or other game config if needed
         showWindow(new GameWindow(this, currentAccount));
     }
 
     public void showLeaderboardWindow() {
-        showWindow(new LeaderboardWindow(this));
+        new LeaderboardWindow(this);
     }
 
     public void showCustomizeWindow() {
-    	new CustomizeWindow(this, currentAccount);
+        // Customize is a separate dialog-style window; no need to replace main menu
+        new CustomizeWindow(this, currentAccount);
+    }
+
+    /**
+     * Persist account to disk and refresh any open UI that depends on it.
+     */
+    public void updateAccount(Account account) {
+        if (account == null) return;
+
+        // keep manager’s copy in sync
+        this.currentAccount = account;
+
+        // save to accounts.txt (or wherever AccountManager writes)
+        accountManager.updateAccount(account);
+
+        // if the main menu is open, refresh its loot display
+        if (mainMenuWindow != null) {
+            mainMenuWindow.refreshLootDisplay();
+        }
     }
 
     public void exitGame() {

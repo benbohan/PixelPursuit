@@ -31,10 +31,10 @@ public class PlayerCosmetics {
     
     // Bit positions for unlockable runner cosmetics (15-27) 
     // 12 items, 3 rows of 4 (last row super expensive)
-    public static final int COSMETIC_TOP_HAT     = 15;
+    public static final int COSMETIC_NONE        = 15;
     public static final int COSMETIC_BEANIE      = 16;
     public static final int COSMETIC_CROWN       = 17;
-    public static final int COSMETIC_HEADBAND    = 18;
+    public static final int COSMETIC_TOP_HAT     = 18;
     public static final int COSMETIC_SHADES      = 19;
     public static final int COSMETIC_HEADPHONES  = 20;
     public static final int COSMETIC_CAT_PET     = 22;
