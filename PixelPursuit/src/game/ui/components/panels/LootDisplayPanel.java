@@ -3,6 +3,7 @@ package game.ui.components.panels;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import game.settings.GameConfig;
 import game.ui.theme.GameFonts;
 
 import java.awt.*;
@@ -21,6 +22,10 @@ import java.awt.image.BufferedImage;
  *
  * In MAIN_MENU mode, the amounts represent vault totals.
  * In GAME mode, the amounts represent in-run loot.
+ *
+ * NEW: second line shows multiplier + difficulty, e.g.
+ *   "Multiplier: 4    Difficulty: Hard"
+ * where 4 = (equipped multiplier) × (mode multiplier).
  */
 public class LootDisplayPanel extends JPanel {
 
@@ -36,6 +41,7 @@ public class LootDisplayPanel extends JPanel {
     private JLabel goldAmountLabel;     // vault gold in MAIN_MENU, run gold in GAME
     private JLabel diamondAmountLabel;  // vault diamonds in MAIN_MENU, run diamonds in GAME
     private JLabel timeLabel;           // only used in GAME
+    private JLabel infoLabel;           // "Multiplier: X    Difficulty: Y"
 
     /**
      * Main-menu constructor (vault HUD).
@@ -60,7 +66,7 @@ public class LootDisplayPanel extends JPanel {
         this.context = context;
 
         setOpaque(false);
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // vertical: row1 + row2
 
         int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
         float fontSize = Math.max(18f, Math.min(screenHeight / 40f, 28f));
@@ -80,59 +86,61 @@ public class LootDisplayPanel extends JPanel {
             showTime = true;
         }
 
-        // --- Gold icon + text ---
+        // Slight padding so it's not glued to the edges
+        setBorder(new EmptyBorder(10, 10, 10, 20));
+
+        // ---------- FIRST ROW: icons + amounts ----------
+        JPanel row1 = new JPanel();
+        row1.setOpaque(false);
+        row1.setLayout(new BoxLayout(row1, BoxLayout.X_AXIS));
+
+        // Gold icon + text
         JLabel goldIconLabel = new JLabel(loadIcon(goldIconPath, 32));
         goldAmountLabel = new JLabel(": " + goldAmount);
         goldAmountLabel.setFont(GameFonts.get(fontSize, Font.BOLD));
         goldAmountLabel.setForeground(Color.WHITE);
 
-        // --- Diamond icon + text ---
+        // Diamond icon + text
         JLabel diamondIconLabel = new JLabel(loadIcon(diamondIconPath, 32));
         diamondAmountLabel = new JLabel(": " + diamondAmount);
         diamondAmountLabel.setFont(GameFonts.get(fontSize, Font.BOLD));
         diamondAmountLabel.setForeground(Color.WHITE);
 
-        // --- Time label (GAME only) ---
+        row1.add(goldIconLabel);
+        row1.add(Box.createRigidArea(new Dimension(6, 0)));
+        row1.add(goldAmountLabel);
+
+        row1.add(Box.createRigidArea(new Dimension(18, 0))); // gap between gold and diamond
+
+        row1.add(diamondIconLabel);
+        row1.add(Box.createRigidArea(new Dimension(6, 0)));
+        row1.add(diamondAmountLabel);
+
         if (showTime) {
             JLabel timeIconLabel = new JLabel(loadIcon("/game/resources/images/time.png", 32));
             timeLabel = new JLabel(formatTime(seconds));
             timeLabel.setFont(GameFonts.get(fontSize, Font.BOLD));
             timeLabel.setForeground(Color.WHITE);
 
-            // Slight padding so it's not glued to the edges
-            setBorder(new EmptyBorder(10, 10, 10, 20));
-
-            // Layout: [gold icon] : ###   gap   [diamond icon] : ###   gap   [time icon] mm:ss
-            add(goldIconLabel);
-            add(Box.createRigidArea(new Dimension(6, 0)));
-            add(goldAmountLabel);
-
-            add(Box.createRigidArea(new Dimension(18, 0))); // gap between gold and diamond
-
-            add(diamondIconLabel);
-            add(Box.createRigidArea(new Dimension(6, 0)));
-            add(diamondAmountLabel);
-
-            add(Box.createRigidArea(new Dimension(18, 0))); // gap before time
-
-            add(timeIconLabel);
-            add(Box.createRigidArea(new Dimension(6, 0)));
-            add(timeLabel);
-        } else {
-            // MAIN_MENU: just vault gold + vault diamonds, no time
-            setBorder(new EmptyBorder(10, 10, 10, 20));
-
-            // Layout: [vaultGold icon] : ###   gap   [vaultDiamond icon] : ### 
-            add(goldIconLabel);
-            add(Box.createRigidArea(new Dimension(6, 0)));
-            add(goldAmountLabel);
-
-            add(Box.createRigidArea(new Dimension(18, 0))); // gap between gold and diamond
-
-            add(diamondIconLabel);
-            add(Box.createRigidArea(new Dimension(6, 0)));
-            add(diamondAmountLabel);
+            row1.add(Box.createRigidArea(new Dimension(18, 0))); // gap before time
+            row1.add(timeIconLabel);
+            row1.add(Box.createRigidArea(new Dimension(6, 0)));
+            row1.add(timeLabel);
         }
+
+        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        add(row1);
+
+        // ---------- SECOND ROW: "Multiplier / Difficulty" ----------
+        add(Box.createRigidArea(new Dimension(0, 2))); // small vertical gap
+
+        infoLabel = new JLabel("Multiplier: -    Difficulty: -");
+        float infoFontSize = Math.max(14f, fontSize * 0.8f);
+        infoLabel.setFont(GameFonts.get(infoFontSize, Font.PLAIN));
+        infoLabel.setForeground(Color.WHITE);
+        infoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        add(infoLabel);
     }
 
     /** Helper to load and scale an icon from resources. */
@@ -183,10 +191,47 @@ public class LootDisplayPanel extends JPanel {
         int secs = total % 60;
         return String.format("Time: %02d:%02d", mins, secs);
     }
-    
-    // NEW: call this when the account changes (MAIN_MENU vault values)
+
+    // MAIN_MENU: call this when the account changes (vault values).
     public void updateLoot(int vaultGold, int vaultDiamonds) {
         setGoldAmount(vaultGold);
         setDiamondAmount(vaultDiamonds);
+    }
+
+    /**
+     * Set the second-line text.
+     *
+     * NOTE: We treat {@code multiplierValue} as the *equipped* multiplier (2, 3, 5, 10, etc.)
+     * and compute the mode multiplier from the difficulty name:
+     *
+     *   Easy → GameConfig.MULTIPLIER_NORMAL (1.0)
+     *   Hard → GameConfig.MULTIPLIER_HARD   (2.0)
+     *
+     * Then we display:
+     *   "Multiplier: (equipped × mode)    Difficulty: <difficultyName>"
+     */
+    public void setMultiplierAndDifficulty(double multiplierValue, String difficultyName) {
+        if (infoLabel == null) return;
+
+        if (difficultyName == null || difficultyName.trim().isEmpty()) {
+            difficultyName = "-";
+        }
+
+        // Determine mode multiplier from difficulty name text
+        double modeMult = GameConfig.MULTIPLIER_NORMAL; // default 1.0 (Easy / normal)
+        String lower = difficultyName.toLowerCase();
+        if (lower.contains("hard")) {
+            modeMult = GameConfig.MULTIPLIER_HARD;       // 2.0
+        }
+        // (You can expand here for Medium, etc. if you ever add more modes.)
+
+        double total = multiplierValue * modeMult;
+
+        int asInt = (int) Math.round(total);
+        String multStr = (Math.abs(total - asInt) < 1e-6)
+                ? String.valueOf(asInt)
+                : String.valueOf(total);
+
+        infoLabel.setText("Multiplier: " + multStr + "    Difficulty: " + difficultyName);
     }
 }

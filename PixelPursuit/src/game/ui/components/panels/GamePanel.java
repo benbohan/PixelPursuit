@@ -177,7 +177,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
         // --- Scale gold texture to fit nicely in the cell ---
         if (goldOriginal != null && cellSize > 0 && goldForCellSize != cellSize) {
-            goldDrawSize = (int) Math.round(cellSize * 0.7);   // 70% of cell
+            goldDrawSize = (int) Math.round(cellSize * 0.9);   // 70% of cell
             goldScaled = goldOriginal.getScaledInstance(
                     goldDrawSize, goldDrawSize, Image.SCALE_SMOOTH
             );
@@ -186,7 +186,7 @@ public class GamePanel extends JPanel implements KeyListener {
         
      // --- Scale diamond texture similarly ---
         if (diamondOriginal != null && cellSize > 0 && diamondForCellSize != cellSize) {
-            diamondDrawSize = (int) Math.round(cellSize * 0.7);
+            diamondDrawSize = (int) Math.round(cellSize * 0.9);
             diamondScaled = diamondOriginal.getScaledInstance(
                     diamondDrawSize, diamondDrawSize, Image.SCALE_SMOOTH
             );

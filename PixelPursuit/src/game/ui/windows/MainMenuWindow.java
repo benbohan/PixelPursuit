@@ -71,7 +71,7 @@ public class MainMenuWindow extends JFrame {
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
 
-        // ---------- LOOT DISPLAY ----------
+     // ---------- LOOT DISPLAY ----------
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
 
@@ -79,6 +79,32 @@ public class MainMenuWindow extends JFrame {
                 currentAccount.getVaultGold(),
                 currentAccount.getVaultDiamonds()
         );
+
+        // ---- NEW: Multiplier + Difficulty line ----
+        double multValue = 1.0;
+        String difficultyName = "Unknown";
+
+        // Get equipped multiplier from the Account (0–3 → 2x, 3x, 5x, 10x)
+        if (currentAccount != null) {
+            int multIndex = currentAccount.getMultiplier();
+            switch (multIndex) {
+                case 0: multValue = 2.0;  break;
+                case 1: multValue = 3.0;  break;
+                case 2: multValue = 5.0;  break;
+                case 3: multValue = 10.0; break;
+                default: multValue = 1.0; // fallback
+            }
+        }
+
+        // Get difficulty display name from GameConfig
+        Difficulty diff = GameConfig.getCurrentDifficulty();
+        if (diff != null) {
+            difficultyName = diff.getDisplayName();
+        }
+
+        // Push into the HUD second line
+        lootDisplay.setMultiplierAndDifficulty(multValue, difficultyName);
+        // -----------------------------------
 
         JPanel rightBox = new JPanel();
         rightBox.setOpaque(false);
@@ -88,7 +114,6 @@ public class MainMenuWindow extends JFrame {
 
         topBar.add(rightBox, BorderLayout.EAST);
         mainPanel.add(topBar, BorderLayout.NORTH);
-
         // ---------- CENTER MENU PANEL ----------
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
@@ -107,7 +132,7 @@ public class MainMenuWindow extends JFrame {
         RoundedHoverButton customizeButton = RoundedHoverButton.createMenuButton(
                 "Customize", halfButtonWidth, buttonHeight, screenHeight);
         RoundedHoverButton settingsButton = RoundedHoverButton.createMenuButton(
-                "Settings", halfButtonWidth, buttonHeight, screenHeight);
+                "Difficulty", halfButtonWidth, buttonHeight, screenHeight);
         JPanel row2 = RoundedHoverButton.createButtonRow(customizeButton, settingsButton, buttonGap);
         menuPanel.add(row2);
         menuPanel.add(Box.createRigidArea(new Dimension(0, gapRow)));
@@ -217,11 +242,35 @@ public class MainMenuWindow extends JFrame {
     // -------- Loot refresh for WindowManager --------
 
     public void refreshLootDisplay() {
-        if (lootDisplay != null && currentAccount != null) {
-            lootDisplay.updateLoot(
-                    currentAccount.getVaultGold(),
-                    currentAccount.getVaultDiamonds()
-            );
+        if (lootDisplay == null || currentAccount == null) {
+            return;
         }
+
+        // 1) Update vault gold / diamonds
+        lootDisplay.updateLoot(
+                currentAccount.getVaultGold(),
+                currentAccount.getVaultDiamonds()
+        );
+
+        // 2) Recompute multiplier value from the equipped index on the account
+        double multValue = 1.0;
+        int multIndex = currentAccount.getMultiplier();
+        switch (multIndex) {
+            case 0: multValue = 2.0;  break;
+            case 1: multValue = 3.0;  break;
+            case 2: multValue = 5.0;  break;
+            case 3: multValue = 10.0; break;
+            default: multValue = 1.0; // fallback
+        }
+
+        // 3) Re-read difficulty name from GameConfig
+        String difficultyName = "Unknown";
+        Difficulty diff = GameConfig.getCurrentDifficulty();
+        if (diff != null) {
+            difficultyName = diff.getDisplayName();
+        }
+
+        // 4) Push second-line text into the HUD
+        lootDisplay.setMultiplierAndDifficulty(multValue, difficultyName);
     }
 }

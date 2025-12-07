@@ -79,6 +79,7 @@ public class DifficultyWindow extends JFrame {
             diffButton.addActionListener(e -> {
                 GameConfig.setCurrentDifficulty(d);
                 statusLabel.setText("Difficulty set to " + d.getDisplayName());
+                windowManager.refreshMainMenuLoot();
             });
 
             buttonsPanel.add(diffButton);

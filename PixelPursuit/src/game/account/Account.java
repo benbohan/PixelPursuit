@@ -11,7 +11,7 @@ public class Account {
     private int color;       // equipped color      (0-14)
     private int cosmetic;    // equipped cosmetic   (15-27)
     private int multiplier;  // equipped multiplier (27-31)
-    private long unlocks;    // unlocks digit mask  (32-digit)
+    private long unlocks;    // unlocks mask
 
     // Constructor - New Account
     public Account(String username, String password, int freeGold, int freeDiamonds, int vaultGold, 
@@ -56,9 +56,19 @@ public class Account {
     
     // Line setup for accounts.txt storage
     public String toFileLine() {
-        return username + ";" + password + ";" + freeGold + ";" + freeDiamonds + ";" + 
-        		vaultGold + ";" + vaultDiamonds + ";" + bestTime + ";" + color + ";" + 
-        		cosmetic + ";" + multiplier + ";" + unlocks;
+        return String.join(";",
+                username,
+                password,
+                String.valueOf(freeGold),
+                String.valueOf(freeDiamonds),
+                String.valueOf(vaultGold),
+                String.valueOf(vaultDiamonds),
+                String.valueOf(bestTime),
+                String.valueOf(color),
+                String.valueOf(cosmetic),
+                String.valueOf(multiplier),
+                String.valueOf(unlocks)
+        );
     }
 
     // Parse from one line in "accounts.txt"

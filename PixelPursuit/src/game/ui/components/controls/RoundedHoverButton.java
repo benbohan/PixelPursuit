@@ -2,23 +2,23 @@ package game.ui.components.controls;
 
 import game.ui.theme.GameFonts;
 
-import javax.swing.JButton;
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 
-/**
- * Rounded white button with light gray border and a subtle hover "grow" effect.
- */
 public class RoundedHoverButton extends JButton {
 
     private static final long serialVersionUID = 1L;
 
-    private static final int ARC = 22;
-    public static final float IDLE_SCALE = 0.9f;  // used in sizing math
+    // ---------- CONSTANTS ----------
 
-    private static final Color BUTTON_FILL   = new Color(255, 255, 255);  // white
-    private static final Color BUTTON_BORDER = BUTTON_FILL.darker();      // light gray
+    private static final int ARC = 22;                         // corner radius for rounded button
+    public static final float IDLE_SCALE = 0.9f;               // default scale when not hovered
+    private static final Color BUTTON_FILL   = new Color(255, 255, 255);  // white fill
+    private static final Color BUTTON_BORDER = BUTTON_FILL.darker();      // light gray border
 
+    // ---------- CONSTRUCTORS ----------
+
+    // RoundedHoverButton - Creates a rounded button with hover "grow" effect
     public RoundedHoverButton(String text) {
         super(text);
         setContentAreaFilled(false);
@@ -27,15 +27,9 @@ public class RoundedHoverButton extends JButton {
         setOpaque(false);
     }
 
-    /**
-     * Factory for menu-style buttons (replaces createHalfButton/createFullButton logic).
-     *
-     * @param text         Button label
-     * @param width        Preferred width in pixels
-     * @param height       Preferred height in pixels
-     * @param screenHeight Screen height (used to scale font nicely)
-     * @return Configured RoundedHoverButton
-     */
+    // ---------- FACTORY HELPERS ----------
+
+    // createMenuButton - Builds a fixed-size menu button with responsive font size
     public static RoundedHoverButton createMenuButton(
             String text,
             int width,
@@ -43,19 +37,24 @@ public class RoundedHoverButton extends JButton {
             int screenHeight
     ) {
         RoundedHoverButton button = new RoundedHoverButton(text);
+
+        // Center button in BoxLayout rows/columns
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // Lock preferred/maximum/minimum size to the same value
         Dimension size = new Dimension(width, height);
         button.setPreferredSize(size);
         button.setMaximumSize(size);
         button.setMinimumSize(size);
 
+        // Scale font roughly with screen height, but clamp to a reasonable range
         int fontSize = Math.max(18, Math.min(screenHeight / 34, 30));
         button.setFont(GameFonts.get((float) fontSize, Font.BOLD));
 
         return button;
     }
-    
+
+    // createButtonRow - Creates a horizontal row with two buttons and a fixed gap
     public static JPanel createButtonRow(
             RoundedHoverButton left,
             RoundedHoverButton right,
@@ -66,6 +65,7 @@ public class RoundedHoverButton extends JButton {
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // [left button] --gap-- [right button]
         row.add(left);
         row.add(Box.createRigidArea(new Dimension(gap, 0)));
         row.add(right);
@@ -73,6 +73,9 @@ public class RoundedHoverButton extends JButton {
         return row;
     }
 
+    // ---------- PAINTING ----------
+
+    // paintComponent - Draws scaled rounded background, border, and centered label text
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
@@ -82,6 +85,7 @@ public class RoundedHoverButton extends JButton {
         int w = getWidth();
         int h = getHeight();
 
+        // Grow button slightly on hover, shrink a bit when idle
         float scale = getModel().isRollover() ? 1.0f : IDLE_SCALE;
 
         int scaledW = (int) (w * scale);
@@ -89,16 +93,16 @@ public class RoundedHoverButton extends JButton {
         int x = (w - scaledW) / 2;
         int y = (h - scaledH) / 2;
 
-        // Fill
+        // Fill rounded background
         g2.setColor(BUTTON_FILL);
         g2.fillRoundRect(x, y, scaledW - 1, scaledH - 1, ARC, ARC);
 
-        // Border
+        // Draw rounded border
         g2.setColor(BUTTON_BORDER);
         g2.setStroke(new BasicStroke(3f));
         g2.drawRoundRect(x + 1, y + 1, scaledW - 3, scaledH - 3, ARC, ARC);
 
-        // Text
+        // Centered button label text
         FontMetrics fm = g2.getFontMetrics(getFont());
         String text = getText();
         int textWidth  = fm.stringWidth(text);
@@ -112,8 +116,7 @@ public class RoundedHoverButton extends JButton {
         g2.dispose();
     }
 
+    // paintBorder - Disabled; border is handled in paintComponent
     @Override
-    protected void paintBorder(Graphics g) {
-        // Border already painted in paintComponent
-    }
+    protected void paintBorder(Graphics g) { /* no-op */ }
 }

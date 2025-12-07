@@ -52,10 +52,7 @@ public class WindowManager {
     }
 
     public void showMainMenu() {
-        // Build once, reuse so we can refresh its loot HUD
-        if (mainMenuWindow == null) {
-            mainMenuWindow = new MainMenuWindow(this, currentAccount);
-        }
+        mainMenuWindow = new MainMenuWindow(this, currentAccount);
         showWindow(mainMenuWindow);
     }
 
@@ -85,6 +82,12 @@ public class WindowManager {
         accountManager.updateAccount(account);
 
         // if the main menu is open, refresh its loot display
+        if (mainMenuWindow != null) {
+            mainMenuWindow.refreshLootDisplay();
+        }
+    }
+    
+    public void refreshMainMenuLoot() {
         if (mainMenuWindow != null) {
             mainMenuWindow.refreshLootDisplay();
         }
