@@ -5,6 +5,12 @@ import game.ui.theme.GameFonts;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Tile-style UI button for the customize menu:
+ *  - Draws a rounded, light gray tile with centered icon or text.
+ *  - Highlights with a thicker, brighter border when selected.
+ *  - Can show a dark overlay when locked to indicate unavailable cosmetics.
+ */
 public class TileButton extends JButton {
 
     private static final long serialVersionUID = 1L;

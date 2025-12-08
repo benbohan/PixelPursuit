@@ -4,6 +4,7 @@ import game.account.AccountManager;
 import game.persistence.Leaderboard;
 import game.persistence.LeaderboardEntry;
 import game.ui.WindowManager;
+import game.ui.components.controls.RoundedHoverButton;
 import game.ui.theme.GameFonts;
 
 import javax.swing.*;
@@ -12,24 +13,41 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Leaderboard window showing longest runs (best time in seconds).
- * Theme: black background + white pixel font, like other dialogs.
+ * Leaderboard window:
+ *  - Shows top runs ordered by best time (longest survival).
+ *  - Uses a dark background + white pixel font, matching other dialogs.
+ *  - Reads account data through AccountManager and formats as mm:ss rows.
  */
 public class LeaderboardWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    // ---------- CONSTANTS ----------
+
+    private static final Color BG_COLOR = new Color(30, 30, 30);
+    private static final Dimension CLOSE_BUTTON_SIZE = new Dimension(200, 48);
+
+    // ---------- FIELDS ----------
+
     private final WindowManager windowManager;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // LeaderboardWindow - Builds and shows the leaderboard dialog
     public LeaderboardWindow(WindowManager windowManager) {
         super("Pixel Pursuit - Leaderboard");
         this.windowManager = windowManager;
         initUI();
     }
 
+    // ---------- UI SETUP ----------
+
+    // initUI - Lays out the leaderboard content and wires the Close button
     private void initUI() {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(520, 420);
+
+        // Slightly wider + taller so long usernames / times fit comfortably
+        setSize(700, 460);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -41,18 +59,12 @@ public class LeaderboardWindow extends JFrame {
         Leaderboard lb = new Leaderboard();
         List<LeaderboardEntry> entries = lb.buildFromAccounts(am.getAllAccounts(), 10);
 
-        // Debug – see what the leaderboard actually has
-        System.out.println("=== LEADERBOARD ENTRIES ===");
-        for (LeaderboardEntry e : entries) {
-            System.out.println("  " + e.getUsername() + "  best=" + e.getBestTimeSeconds());
-        }
-
         // ----- ROOT PANEL -----
         JPanel root = new JPanel();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         root.setBorder(new EmptyBorder(20, 40, 20, 40));
         root.setOpaque(true);
-        root.setBackground(new Color(30, 30, 30));
+        root.setBackground(BG_COLOR);
 
         // Title
         JLabel title = new JLabel("Longest Runs");
@@ -73,13 +85,11 @@ public class LeaderboardWindow extends JFrame {
             for (LeaderboardEntry entry : entries) {
                 double bestSeconds = entry.getBestTimeSeconds();
 
-                // Format strictly as mm:ss, no placeholders
+                // Format strictly as mm:ss
                 String timeStr = formatTime(bestSeconds);
 
-                // Also log the exact row text we use
-                String rowText = String.format("%2d. %-12s  %s",
+                String rowText = String.format("%2d. %-18s  %s",
                         rank, entry.getUsername(), timeStr);
-                System.out.println("LB ROW: \"" + rowText + "\"");
 
                 JLabel row = new JLabel(rowText);
                 row.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -99,8 +109,12 @@ public class LeaderboardWindow extends JFrame {
         buttonRow.setOpaque(false);
         buttonRow.setLayout(new BoxLayout(buttonRow, BoxLayout.X_AXIS));
 
-        JButton close = new JButton("Close");
+        RoundedHoverButton close = new RoundedHoverButton("Close");
+        close.setAlignmentX(Component.CENTER_ALIGNMENT);
         close.setFont(GameFonts.get(18f, Font.BOLD));
+        close.setMaximumSize(CLOSE_BUTTON_SIZE);
+        close.setPreferredSize(CLOSE_BUTTON_SIZE);
+        close.setMinimumSize(CLOSE_BUTTON_SIZE);
         close.addActionListener(e -> dispose());
 
         buttonRow.add(Box.createHorizontalGlue());
@@ -113,10 +127,11 @@ public class LeaderboardWindow extends JFrame {
         setVisible(true);
     }
 
-    /** Format seconds as mm:ss. Never returns "...". */
+    // ---------- FORMAT HELPERS ----------
+
+    // formatTime - Converts seconds into mm:ss, returning "00:00" for non-positive values
     private String formatTime(double seconds) {
         if (seconds <= 0) {
-            // if you prefer blank, change to "  --:--"
             return "00:00";
         }
         int total = (int) Math.floor(seconds);

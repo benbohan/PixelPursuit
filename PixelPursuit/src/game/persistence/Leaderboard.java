@@ -4,12 +4,17 @@ import game.account.Account;
 
 import java.util.*;
 
+/**
+ * Leaderboard helper:
+ *  - Builds a sorted list of leaderboard entries from all accounts.
+ *  - Sorts by best run time (bestTime) in descending order.
+ *  - Ignores accounts with no recorded time (bestTime <= 0).
+ */
 public class Leaderboard {
 
-    /**
-     * Build a leaderboard list from all accounts, sorted by best time descending.
-     * Only includes accounts with bestTime > 0.
-     */
+    // ---------- BUILDING ----------
+
+    // buildFromAccounts - Builds a sorted leaderboard from the given accounts (up to maxEntries)
     public List<LeaderboardEntry> buildFromAccounts(Collection<Account> accounts, int maxEntries) {
         List<LeaderboardEntry> list = new ArrayList<>();
 

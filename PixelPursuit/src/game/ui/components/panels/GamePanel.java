@@ -7,19 +7,19 @@ import game.world.*;
 import game.cosmetics.*;
 import game.settings.GameConfig;
 
-import game.account.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
 /**
- * Draws the maze and the runner, handles keyboard input,
- * and advances the runner over time using a Swing Timer.
- * Walls are textured with stone.png, gold tiles use gold.png.
+ * GamePanel - Draws the maze and runner, handles keyboard input,
+ * and drives movement with a Swing timer.
  */
 public class GamePanel extends JPanel implements KeyListener {
+
+    // ---------- FIELDS ----------
 
     private static final long serialVersionUID = 1L;
 
@@ -27,30 +27,28 @@ public class GamePanel extends JPanel implements KeyListener {
     private final Maze maze;
     private final Runner runner;
     private final GameWindow window;
-    private Account account;
 
-    // Stone texture for wall cells
     private Image stoneOriginal;
     private Image stoneScaled;
-    private int stoneForCellSize = -1;   // cache based on cellSize
-    private int stoneDrawSize = 0;       // actual size of scaled texture
+    private int stoneForCellSize = -1;
+    private int stoneDrawSize = 0;
 
-    // Gold texture for gold tiles
     private Image goldOriginal;
     private Image goldScaled;
     private int goldForCellSize = -1;
     private int goldDrawSize = 0;
-    
-    // Diamond texture for diamond tiles
+
     private Image diamondOriginal;
     private Image diamondScaled;
     private int diamondForCellSize = -1;
     private int diamondDrawSize = 0;
 
-    // Movement timer: smaller delay = faster glide
     private final Timer movementTimer;
-    private static final int MOVE_INTERVAL_MS = GameConfig.RUNNER_MOVE_INTERVAL_MS; // tweak speed here
+    private static final int MOVE_INTERVAL_MS = GameConfig.RUNNER_MOVE_INTERVAL_MS;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // GamePanel - Wires session, loads textures, and starts the movement timer
     public GamePanel(Session session, GameWindow window) {
         this.session = session;
         this.maze = session.getMaze();
@@ -61,7 +59,6 @@ public class GamePanel extends JPanel implements KeyListener {
         setFocusable(true);
         addKeyListener(this);
 
-        // Load the stone texture (place stone.png in /game/resources/)
         try {
             stoneOriginal = new ImageIcon(
                     GamePanel.class.getResource("/game/resources/images/stone.png")
@@ -70,7 +67,6 @@ public class GamePanel extends JPanel implements KeyListener {
             stoneOriginal = null;
         }
 
-        // Load the gold texture (place gold.png in /game/resources/)
         try {
             goldOriginal = new ImageIcon(
                     GamePanel.class.getResource("/game/resources/images/gold.png")
@@ -78,8 +74,7 @@ public class GamePanel extends JPanel implements KeyListener {
         } catch (Exception e) {
             goldOriginal = null;
         }
-        
-     // Load the diamond texture (diamond.png in /game/resources/images/)
+
         try {
             diamondOriginal = new ImageIcon(
                     GamePanel.class.getResource("/game/resources/images/diamond.png")
@@ -88,7 +83,6 @@ public class GamePanel extends JPanel implements KeyListener {
             diamondOriginal = null;
         }
 
-        // Movement timer = our "clock"
         movementTimer = new Timer(MOVE_INTERVAL_MS, e -> {
             runner.step();
 
@@ -97,7 +91,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
             window.updateHudFromSession();
 
-            // Check exit first (if you reach it before being killed)
+            // Check exit first
             if (runner.isAlive()
                     && runner.getX() == maze.getExitX()
                     && runner.getY() == maze.getExitY()) {
@@ -105,7 +99,7 @@ public class GamePanel extends JPanel implements KeyListener {
                 return;
             }
 
-            // If a chaser caught you, runner will be dead now
+            // Then check death
             if (!runner.isAlive()) {
                 window.handleRunnerDied();
                 return;
@@ -116,16 +110,16 @@ public class GamePanel extends JPanel implements KeyListener {
         movementTimer.start();
     }
 
-    // Set the account for cosmetics / stats
-    public void setAccount(Account account) {
-        this.account = account;
-    }
+    // ---------- PUBLIC API ----------
 
-    /** Called by GameWindow when the run ends so we stop the timer. */
+    // stopMovement - Stops the movement timer when the run ends
     public void stopMovement() {
         movementTimer.stop();
     }
 
+    // ---------- PAINTING ----------
+
+    // paintComponent - Renders maze, pickups, chasers, and runner + cosmetic
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -137,7 +131,6 @@ public class GamePanel extends JPanel implements KeyListener {
         int cols = maze.getWidth();
         int rows = maze.getHeight();
 
-        // Leave margin so we don't cover the frame decorations
         int marginX = getWidth()  / 10;
         int marginY = getHeight() / 8;
 
@@ -160,31 +153,31 @@ public class GamePanel extends JPanel implements KeyListener {
         Color entranceCol  = UiColors.MAZE_ENTRANCE;
         Color exitCol      = UiColors.MAZE_EXIT;
 
-        Color runnerColor  = (account != null)
-                ? PlayerCosmetics.getRunnerColor(account)
+        Color runnerColor  = (window != null)
+                ? window.getRunnerColor()
                 : UiColors.PLAYER_DEFAULT_GRAY;
 
         Color chaserColor  = UiColors.CHASER_DEFAULT;
 
-        // --- Scale stone texture to a larger size than the cell (zoomed in) ---
+        // Scale stone texture for walls
         if (stoneOriginal != null && cellSize > 0 && stoneForCellSize != cellSize) {
-            stoneDrawSize = (int) Math.round(cellSize * 1.8);  // zoom factor
+            stoneDrawSize = (int) Math.round(cellSize * 1.8);
             stoneScaled = stoneOriginal.getScaledInstance(
                     stoneDrawSize, stoneDrawSize, Image.SCALE_SMOOTH
             );
             stoneForCellSize = cellSize;
         }
 
-        // --- Scale gold texture to fit nicely in the cell ---
+        // Scale gold texture for pickups
         if (goldOriginal != null && cellSize > 0 && goldForCellSize != cellSize) {
-            goldDrawSize = (int) Math.round(cellSize * 0.9);   // 70% of cell
+            goldDrawSize = (int) Math.round(cellSize * 0.9);
             goldScaled = goldOriginal.getScaledInstance(
                     goldDrawSize, goldDrawSize, Image.SCALE_SMOOTH
             );
             goldForCellSize = cellSize;
         }
-        
-     // --- Scale diamond texture similarly ---
+
+        // Scale diamond texture for diamond pickups
         if (diamondOriginal != null && cellSize > 0 && diamondForCellSize != cellSize) {
             diamondDrawSize = (int) Math.round(cellSize * 0.9);
             diamondScaled = diamondOriginal.getScaledInstance(
@@ -193,9 +186,9 @@ public class GamePanel extends JPanel implements KeyListener {
             diamondForCellSize = cellSize;
         }
 
-        // Draw cells
         Shape oldClip = g2.getClip();
 
+        // Draw maze cells and pickups
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Cell cell = maze.getCell(x, y);
@@ -203,12 +196,11 @@ public class GamePanel extends JPanel implements KeyListener {
                 int px = offsetX + x * cellSize;
                 int py = offsetY + y * cellSize;
 
-                // --- walls (stone texture) ---
                 if (cell.isWall()) {
                     if (stoneScaled != null) {
                         g2.setClip(px, py, cellSize, cellSize);
 
-                        int offset = (cellSize - stoneDrawSize) / 2; // negative -> zoomed
+                        int offset = (cellSize - stoneDrawSize) / 2;
                         g2.drawImage(stoneScaled,
                                 px + offset, py + offset,
                                 stoneDrawSize, stoneDrawSize,
@@ -220,12 +212,10 @@ public class GamePanel extends JPanel implements KeyListener {
                         g2.fillRect(px, py, cellSize, cellSize);
                     }
                 } else {
-                    // floor
                     g2.setColor(floorColor);
                     g2.fillRect(px, py, cellSize, cellSize);
                 }
 
-                // Entrance / exit highlight
                 if (x == maze.getEntranceX() && y == maze.getEntranceY()) {
                     g2.setColor(entranceCol);
                     g2.fillRect(px, py, cellSize, cellSize);
@@ -234,27 +224,24 @@ public class GamePanel extends JPanel implements KeyListener {
                     g2.fillRect(px, py, cellSize, cellSize);
                 }
 
-                // --- GOLD: draw gold.png on floor cells that have gold ---
                 if (!cell.isWall() && cell.hasGold() && goldScaled != null) {
                     int gx = px + (cellSize - goldDrawSize) / 2;
                     int gy = py + (cellSize - goldDrawSize) / 2;
                     g2.drawImage(goldScaled, gx, gy, null);
                 }
-                
-                // DIAMOND
+
                 if (!cell.isWall() && cell.hasDiamond() && diamondScaled != null) {
                     int dx = px + (cellSize - diamondDrawSize) / 2;
                     int dy = py + (cellSize - diamondDrawSize) / 2;
                     g2.drawImage(diamondScaled, dx, dy, null);
                 }
 
-                // Grid line
                 g2.setColor(gridColor);
                 g2.drawRect(px, py, cellSize, cellSize);
             }
         }
 
-        // --- Draw chasers ---
+        // Draw chasers
         for (Chaser chaser : session.getChasers()) {
             int cx = offsetX + chaser.getX() * cellSize;
             int cy = offsetY + chaser.getY() * cellSize;
@@ -267,22 +254,58 @@ public class GamePanel extends JPanel implements KeyListener {
             g2.fillRoundRect(cx + marginC, cy + marginC, sizeC, sizeC, arcC, arcC);
         }
 
-        // --- Draw runner as rounded square ---
+        // Draw runner
         int rx = offsetX + runner.getX() * cellSize;
         int ry = offsetY + runner.getY() * cellSize;
         int margin = cellSize / 6;
         int size = cellSize - 2 * margin;
         int arc = cellSize / 3;
 
+        int bodyX = rx + margin;
+        int bodyY = ry + margin;
+
         g2.setColor(runnerColor);
-        g2.fillRoundRect(rx + margin, ry + margin, size, size, arc, arc);
+        g2.fillRoundRect(bodyX, bodyY, size, size, arc, arc);
+
+        // Draw cosmetic on top of runner
+        if (window != null) {
+            int cosmeticId = window.getRunnerCosmeticId();
+            if (cosmeticId >= 0) {
+                BufferedImage cosImg = PlayerCosmetics.getCosmeticImage(cosmeticId);
+                if (cosImg != null) {
+                    double maxScale = 1.8;
+                    int imgW = cosImg.getWidth();
+                    int imgH = cosImg.getHeight();
+                    double scale = maxScale * size / Math.max(imgW, imgH);
+
+                    int drawW = (int) Math.round(imgW * scale);
+                    int drawH = (int) Math.round(imgH * scale);
+
+                    int cx = bodyX + (size - drawW) / 2
+                            + PlayerCosmetics.getCosmeticOffsetX(cosmeticId);
+                    int cy = bodyY + (size - drawH) / 2
+                            + PlayerCosmetics.getCosmeticOffsetY(cosmeticId);
+
+                    if (isHat(cosmeticId)) {
+                        cy -= size / 3;
+                    } else if (isGlasses(cosmeticId)) {
+                        cy -= size / 8;
+                    } else if (isPet(cosmeticId)) {
+                        cx += size / 10;
+                        cy += size / 10;
+                    }
+
+                    g2.drawImage(cosImg, cx, cy, drawW, drawH, null);
+                }
+            }
+        }
 
         g2.dispose();
     }
 
-    // ---------- key controls (WASD + arrow keys) ----------
-    // Set direction; timer handles actual movement.
+    // ---------- KEY INPUT ----------
 
+    // keyPressed - Handles WASD/arrow keys to set runner direction (space to stop)
     @Override
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
@@ -290,23 +313,56 @@ public class GamePanel extends JPanel implements KeyListener {
         switch (key) {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
-                runner.setDirection(0, -1); break;
+                runner.setDirection(0, -1);
+                break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                runner.setDirection(0, 1); break;
+                runner.setDirection(0, 1);
+                break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                runner.setDirection(-1, 0); break;
+                runner.setDirection(-1, 0);
+                break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                runner.setDirection(1, 0); break;
-
-            // Optional: Space to STOP gliding
+                runner.setDirection(1, 0);
+                break;
             case KeyEvent.VK_SPACE:
-                runner.stop(); break;
+                runner.stop();
+                break;
         }
     }
 
-    @Override public void keyReleased(KeyEvent e) { }
-    @Override public void keyTyped(KeyEvent e) { }
+    // keyReleased - Unused but required by KeyListener
+    @Override
+    public void keyReleased(KeyEvent e) { }
+
+    // keyTyped - Unused but required by KeyListener
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    // ---------- COSMETIC HELPERS ----------
+
+    // isHat - Returns true if the cosmetic id is a hat-style item
+    private boolean isHat(int id) {
+        return id == PlayerCosmetics.COSMETIC_BEANIE
+            || id == PlayerCosmetics.COSMETIC_CROWN
+            || id == PlayerCosmetics.COSMETIC_TOP_HAT
+            || id == PlayerCosmetics.COSMETIC_HEADPHONES
+            || id == PlayerCosmetics.COSMETIC_GOLD_HAT
+            || id == PlayerCosmetics.COSMETIC_DIAMOND_HAT;
+    }
+
+    // isGlasses - Returns true if the cosmetic id is a glasses-style item
+    private boolean isGlasses(int id) {
+        return id == PlayerCosmetics.COSMETIC_SHADES
+            || id == PlayerCosmetics.COSMETIC_GOLD_SHADES
+            || id == PlayerCosmetics.COSMETIC_DIAMOND_SHADES;
+    }
+
+    // isPet - Returns true if the cosmetic id is a pet-style item
+    private boolean isPet(int id) {
+        return id == PlayerCosmetics.COSMETIC_CAT_PET
+            || id == PlayerCosmetics.COSMETIC_DOG_PET;
+    }
 }

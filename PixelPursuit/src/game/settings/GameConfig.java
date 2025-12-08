@@ -1,21 +1,25 @@
 package game.settings;
 
 /**
- * Central place for all game tunables and magic numbers.
+ * GameConfig - Central place for tunable gameplay constants and magic numbers.
  * Change values here instead of hunting through multiple classes.
  */
 public final class GameConfig {
 
+    // ---------- DIFFICULTY STATE ----------
+
+    private static Difficulty currentDifficulty = Difficulty.EASY;
+
     private GameConfig() {
         // no instances
     }
-    
-    private static Difficulty currentDifficulty = Difficulty.EASY;
 
+    // getCurrentDifficulty - Returns the active difficulty used for new runs
     public static Difficulty getCurrentDifficulty() {
         return currentDifficulty;
     }
 
+    // setCurrentDifficulty - Updates the global difficulty (must not be null)
     public static void setCurrentDifficulty(Difficulty difficulty) {
         if (difficulty == null) {
             throw new IllegalArgumentException("difficulty cannot be null");
@@ -23,77 +27,70 @@ public final class GameConfig {
         currentDifficulty = difficulty;
     }
 
-    // ----- Maze layout -----
+    // ---------- MAZE LAYOUT ----------
 
-    // Logical maze dimensions in cells
     public static final int MAZE_WIDTH  = 36;
     public static final int MAZE_HEIGHT = 18;
 
-    // ----- Movement & timing -----
+    // ---------- MOVEMENT & TIMING ----------
 
-    // Runner glide step in ms (Swing Timer in GamePanel)
-    public static final int RUNNER_MOVE_INTERVAL_MS = 300;
-
-    // Chaser step interval in seconds (used in Session)
-    public static final double CHASER_MOVE_INTERVAL_SEC = 0.6;
-
-    // Random gold spawn interval in seconds
-    public static final double GOLD_SPAWN_INTERVAL_SEC = 5;
-
-    // Survival gold: how often and how much
+    public static final int RUNNER_MOVE_INTERVAL_MS      = 300;
+    public static final double CHASER_MOVE_INTERVAL_SEC  = 0.6;
+    public static final double GOLD_SPAWN_INTERVAL_SEC   = 5.0;
     public static final double SURVIVAL_GOLD_INTERVAL_SEC = 10.0;
-    public static final int SURVIVAL_GOLD_PER_TICK = 1;
+    public static final int SURVIVAL_GOLD_PER_TICK       = 1;
 
-    // ----- Scoring / multipliers -----
+    // ---------- SCORING / MULTIPLIERS ----------
 
-    // For now we only use 0x (death) and 1x (escape),
-    // but ready for 2x/3x on harder AIs later
     public static final double MULTIPLIER_DEATH  = 0.0;
     public static final double MULTIPLIER_NORMAL = 1.0;
     public static final double MULTIPLIER_HARD   = 2.0;
 
-    // ----- Leaderboard -----
+    public static final int DIAMOND_GOLD_VALUE   = 10;
+
+    // ---------- LEADERBOARD ----------
 
     public static final int LEADERBOARD_MAX_ENTRIES = 10;
-	public static final int DIAMOND_GOLD_VALUE = 10;
-    
-    /** How many chasers to spawn for the current difficulty. */
+
+    // ---------- DIFFICULTY HELPERS ----------
+
+    // getChaserCountForCurrentDifficulty - Returns chaser count based on difficulty
     public static int getChaserCountForCurrentDifficulty() {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
             case HARD:
-                return 2;   // HARD: 2 chasers
+                return 2;
             case EASY:
             default:
-                return 1;   // EASY: 1 chaser
+                return 1;
         }
     }
 
-    /** How far away (in Manhattan distance) chasers can "smell" the runner. */
+    // getDetectionRadiusForCurrentDifficulty - Returns chaser detection radius
     public static int getDetectionRadiusForCurrentDifficulty() {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
             case HARD:
-                return 11;  // locks on from further away
+                return 11;
             case EASY:
             default:
-                return 7;   // closer only
+                return 7;
         }
     }
 
-    /** Gold spawn interval, per difficulty. Larger = less frequent spawns. */
+    // getGoldSpawnIntervalForCurrentDifficulty - Returns gold spawn interval in seconds
     public static double getGoldSpawnIntervalForCurrentDifficulty() {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
             case HARD:
-                return 5.0; // slower gold spawns
+                return 5.0;
             case EASY:
             default:
-                return 4.0; // a bit slower
+                return 4.0;
         }
     }
 
-    /** Chance (0–1) that a spawn becomes a diamond instead of gold. */
+    // getDiamondChanceForCurrentDifficulty - Returns diamond spawn chance (0–1)
     public static double getDiamondChanceForCurrentDifficulty() {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
@@ -104,5 +101,4 @@ public final class GameConfig {
                 return 0.10;
         }
     }
-
 }

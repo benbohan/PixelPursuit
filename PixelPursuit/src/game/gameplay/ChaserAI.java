@@ -1,15 +1,15 @@
 package game.gameplay;
 
 /**
- * AI for a Chaser. Each tick, Session calls update() so the AI can move it.
+ * AI contract for controlling a Chaser:
+ *  - Session calls update(...) once per tick for each active Chaser.
+ *  - Implementations decide how the Chaser moves based on the Session state.
+ *  - Can use maze layout, runner position, timers, or randomness to drive behavior.
  */
 public interface ChaserAI {
 
-    /**
-     * Called once per update to let this AI control the given chaser.
-     *
-     * @param chaser  the chaser this AI controls
-     * @param session the current game session (access to runner, maze, etc.)
-     */
+    // ---------- CONTRACT ----------
+
+    // update - Called once per tick so this AI can control the given chaser
     void update(Chaser chaser, Session session);
 }

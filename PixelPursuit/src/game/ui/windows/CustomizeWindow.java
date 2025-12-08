@@ -3,6 +3,8 @@ package game.ui.windows;
 import game.account.Account;
 import game.cosmetics.PlayerCosmetics;
 import game.cosmetics.CosmeticInfo;
+import game.cosmetics.ColorInfo;
+import game.cosmetics.MultiplierInfo;
 import game.ui.WindowManager;
 import game.ui.components.controls.RoundedHoverButton;
 import game.ui.components.controls.ColorTileButton;
@@ -15,46 +17,17 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * Simplified customization window with black background + white text,
- * matching the run summary theme. Lets the player pick:
- *  - Runner color
- *  - Cosmetic
- *  - Multiplier
+ * CustomizeWindow:
+ *  - Dark-theme window for choosing runner color, cosmetic, and multiplier.
+ *  - Handles unlock flow using gold/diamonds and updates the Account via WindowManager.
  */
 public class CustomizeWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    private static final int COLOR_BUTTON_WIDTH  = 70;  // a bit narrower
+    private static final int COLOR_BUTTON_WIDTH  = 70;
     private static final int COLOR_BUTTON_HEIGHT = 70;
-    private static final int TILE_SIZE = 72;
-    private static final String[] MULT_LABELS = { "2x", "3x", "5x", "10x" };
-    private static final int MULTIPLIER_BIT_BASE = 28;
-    
-    private static final int[] MULT_COSTS = { 
-    	    10,    // 2x
-    	    250,  // 3x
-    	    500,  // 5x
-    	    1000  // 10x
-    };
-    
-    private static final int[] COLOR_COSTS = {
-    	    100,   // 0  RED
-    	    100,  // 1  ORANGE
-    	    100,  // 2  YELLOW
-    	    100,  // 3  DARK_GREEN
-    	    100,  // 4  GREEN
-    	    100,  // 5  LIME
-    	    100, // 6  DARK_BLUE
-    	    100, // 7  TEAL
-    	    100, // 8  LIGHT_BLUE
-    	    100, // 9  PURPLE
-    	    100, // 10 LAVENDER
-    	    100, // 11 PINK
-    	    100, // 12 BLACK
-    	    100, // 13 DARK_GRAY
-    	    0    // 14 DEFAULT_GRAY (free/default)
-    };
+    private static final int TILE_SIZE           = 72;
 
     private JLabel colorSelectedLabel;
     private JLabel cosmeticSelectedLabel;
@@ -63,10 +36,11 @@ public class CustomizeWindow extends JFrame {
     private final Account account;
     private final WindowManager windowManager;
 
-    private final JButton[] colorButtons      = new JButton[15]; // color IDs 0–14
+    private final JButton[] colorButtons      = new JButton[15];
     private final JButton[] cosmeticButtons   = new JButton[CosmeticInfo.ALL.length];
-    private final JButton[] multiplierButtons = new JButton[4];
+    private final JButton[] multiplierButtons = new JButton[MultiplierInfo.ALL.length];
 
+    // CustomizeWindow - Builds the customization window for the given account
     public CustomizeWindow(WindowManager windowManager, Account account) {
         super("Customize");
         this.account = account;
@@ -75,7 +49,6 @@ public class CustomizeWindow extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        // ----- Root content: black background like run summary -----
         Color bgColor = new Color(30, 30, 30);
 
         JPanel content = new JPanel();
@@ -85,7 +58,6 @@ public class CustomizeWindow extends JFrame {
         content.setBackground(bgColor);
         setContentPane(content);
 
-        // ----- Title -----
         JLabel titleLabel = new JLabel("Customize Runner");
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setFont(GameFonts.get(28f, Font.BOLD));
@@ -94,7 +66,8 @@ public class CustomizeWindow extends JFrame {
         content.add(titleLabel);
         content.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // ========== COLORS SECTION ==========
+        // ---------- COLORS SECTION ----------
+
         JLabel colorsLabel = sectionLabel("Colors");
         colorSelectedLabel = detailLabel("Selected: -");
 
@@ -103,7 +76,6 @@ public class CustomizeWindow extends JFrame {
         colorsGrid.setAlignmentX(Component.CENTER_ALIGNMENT);
         colorsGrid.setBorder(new EmptyBorder(0, 32, 0, 32));
 
-        // Add 5x3 color buttons using your IDs + UiColors
         addColorButton(colorsGrid, PlayerCosmetics.COLOR_RED,          UiColors.PLAYER_RED);
         addColorButton(colorsGrid, PlayerCosmetics.COLOR_ORANGE,       UiColors.PLAYER_ORANGE);
         addColorButton(colorsGrid, PlayerCosmetics.COLOR_YELLOW,       UiColors.PLAYER_YELLOW);
@@ -131,7 +103,8 @@ public class CustomizeWindow extends JFrame {
         content.add(Box.createRigidArea(new Dimension(0, 18)));
         content.add(separatorLabel());
 
-        // ========== COSMETICS SECTION ==========
+        // ---------- COSMETICS SECTION ----------
+
         content.add(Box.createRigidArea(new Dimension(0, 18)));
 
         JLabel cosmeticsLabel = sectionLabel("Cosmetics");
@@ -154,7 +127,8 @@ public class CustomizeWindow extends JFrame {
         content.add(Box.createRigidArea(new Dimension(0, 18)));
         content.add(separatorLabel());
 
-        // ========== MULTIPLIERS SECTION ==========
+        // ---------- MULTIPLIERS SECTION ----------
+
         content.add(Box.createRigidArea(new Dimension(0, 18)));
 
         JLabel multipliersLabel = sectionLabel("Multipliers");
@@ -165,8 +139,8 @@ public class CustomizeWindow extends JFrame {
         multipliersRow.setAlignmentX(Component.CENTER_ALIGNMENT);
         multipliersRow.setBorder(new EmptyBorder(0, 32, 0, 32));
 
-        for (int i = 0; i < MULT_LABELS.length; i++) {
-            JPanel cell = createMultiplierCell(MULT_LABELS[i], i);
+        for (MultiplierInfo info : MultiplierInfo.ALL) {
+            JPanel cell = createMultiplierCell(info);
             multipliersRow.add(cell);
         }
 
@@ -175,7 +149,8 @@ public class CustomizeWindow extends JFrame {
         content.add(Box.createRigidArea(new Dimension(0, 6)));
         content.add(multipliersRow);
 
-        // ----- Back button (centered, like big buttons in run summary) -----
+        // ---------- BACK BUTTON ----------
+
         content.add(Box.createRigidArea(new Dimension(0, 24)));
 
         RoundedHoverButton backButton = new RoundedHoverButton("Back");
@@ -189,13 +164,14 @@ public class CustomizeWindow extends JFrame {
         content.add(backButton);
 
         backButton.addActionListener(e -> {
-            windowManager.updateAccount(account);
+            if (windowManager != null) {
+                windowManager.updateAccount(account);
+            }
             dispose();
         });
 
         pack();
 
-        // Make it a bit wider / taller so grids aren't cramped
         int minW = 700;
         int minH = 720;
         int w = Math.max(getWidth(), minW);
@@ -203,17 +179,19 @@ public class CustomizeWindow extends JFrame {
         setSize(w, h);
         setLocationRelativeTo(null);
 
-        // highlight currently equipped selections (if any)
+        // ---------- INITIAL SELECTION HIGHLIGHT ----------
+
         if (account != null) {
-            // ----- Color -----
             int equippedColor = account.getColor();
             if (equippedColor >= 0 && equippedColor < colorButtons.length
                     && colorButtons[equippedColor] != null) {
                 setSelectedColorBorder(equippedColor);
-                colorSelectedLabel.setText("Selected: " + getColorName(equippedColor));
+                ColorInfo cInfo = ColorInfo.findById(equippedColor);
+                if (cInfo != null) {
+                    colorSelectedLabel.setText("Selected: " + cInfo.name);
+                }
             }
 
-            // ----- Cosmetic (using ID 15–27) -----
             int equippedCosmeticId = account.getCosmetic();
             int equippedCosmeticIndex = CosmeticInfo.indexOfId(equippedCosmeticId);
             if (equippedCosmeticIndex >= 0
@@ -224,25 +202,27 @@ public class CustomizeWindow extends JFrame {
                 cosmeticSelectedLabel.setText("Selected: " + info.name);
             }
 
-            // ----- Multiplier (still using index 0–3) -----
             int equippedMult = account.getMultiplier();
-            if (equippedMult >= 0 && equippedMult < multiplierButtons.length
+            MultiplierInfo mInfo = MultiplierInfo.byIndex(equippedMult);
+            if (mInfo != null
+                    && equippedMult >= 0 && equippedMult < multiplierButtons.length
                     && multiplierButtons[equippedMult] != null) {
                 setSelectedMultiplierBorder(equippedMult);
-                multiplierSelectedLabel.setText("Selected: " + MULT_LABELS[equippedMult]);
+                multiplierSelectedLabel.setText("Selected: " + mInfo.label);
             }
         }
 
         setVisible(true);
     }
 
-    // Fallback constructor for testing without WindowManager
+    // CustomizeWindow - Convenience constructor for testing without a WindowManager
     public CustomizeWindow(Account account) {
         this(null, account);
     }
 
-    // ---------- small label helpers ----------
+    // ---------- LABEL HELPERS ----------
 
+    // sectionLabel - Creates an uppercase section header label
     private JLabel sectionLabel(String text) {
         JLabel label = new JLabel(text.toUpperCase());
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -251,6 +231,7 @@ public class CustomizeWindow extends JFrame {
         return label;
     }
 
+    // detailLabel - Creates a smaller secondary label under a section title
     private JLabel detailLabel(String text) {
         JLabel label = new JLabel(text);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -259,6 +240,7 @@ public class CustomizeWindow extends JFrame {
         return label;
     }
 
+    // separatorLabel - Creates a simple dashed separator label
     private JLabel separatorLabel() {
         JLabel sep = new JLabel("------------------------------");
         sep.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -267,10 +249,10 @@ public class CustomizeWindow extends JFrame {
         return sep;
     }
 
-    // ---------- helpers ----------
+    // ---------- COLOR HELPERS ----------
 
+    // addColorButton - Adds a color tile+price cell to the grid and wires purchase/equip logic
     private void addColorButton(JPanel grid, int colorId, Color color) {
-        // main tile
         ColorTileButton btn = new ColorTileButton(color);
         Dimension d = new Dimension(COLOR_BUTTON_WIDTH, COLOR_BUTTON_HEIGHT);
         btn.setPreferredSize(d);
@@ -281,17 +263,16 @@ public class CustomizeWindow extends JFrame {
             colorButtons[colorId] = btn;
         }
 
-        // ---- price row (gold icon + small text) ----
+        ColorInfo info = ColorInfo.findById(colorId);
+        int cost = (info != null) ? info.goldCost : 0;
+        String itemName = (info != null) ? info.name : "Unknown";
+
         JPanel priceRow = new JPanel();
         priceRow.setOpaque(false);
         priceRow.setLayout(new BoxLayout(priceRow, BoxLayout.X_AXIS));
 
         Icon goldIcon = loadCosmeticIcon("gold.png", 36);
         JLabel goldLabel = new JLabel(goldIcon);
-
-        int cost = (colorId >= 0 && colorId < COLOR_COSTS.length)
-                ? COLOR_COSTS[colorId]
-                : 0;
 
         boolean ownedAtOpen = isUnlockedBit(colorId) || cost == 0;
         String priceText = ownedAtOpen ? "Owned" : String.valueOf(cost);
@@ -306,7 +287,6 @@ public class CustomizeWindow extends JFrame {
         priceRow.add(priceLabel);
         priceRow.add(Box.createHorizontalGlue());
 
-        // ---- wrap tile + price in a vertical cell ----
         JPanel cell = new JPanel();
         cell.setOpaque(false);
         cell.setLayout(new BoxLayout(cell, BoxLayout.Y_AXIS));
@@ -318,15 +298,12 @@ public class CustomizeWindow extends JFrame {
         cell.add(Box.createRigidArea(new Dimension(0, 4)));
         cell.add(priceRow);
 
-        // initial lock visual
         btn.setLocked(!ownedAtOpen);
 
-        // click logic: equip if owned, else try to buy
         btn.addActionListener(e -> {
             boolean ownedNow = isUnlockedBit(colorId) || cost == 0;
 
             if (ownedNow) {
-                // just equip
                 if (account != null) {
                     account.setColor(colorId);
                     if (windowManager != null) {
@@ -334,15 +311,13 @@ public class CustomizeWindow extends JFrame {
                     }
                 }
                 setSelectedColorBorder(colorId);
-                if (colorSelectedLabel != null) {
-                    colorSelectedLabel.setText("Selected: " + getColorName(colorId));
+                if (colorSelectedLabel != null && info != null) {
+                    colorSelectedLabel.setText("Selected: " + info.name);
                 }
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
 
-            // locked -> purchase flow
-            String itemName = getColorName(colorId);
             if (confirmAndSpendGold(itemName, cost)) {
                 unlockBit(colorId);
                 if (account != null) {
@@ -352,8 +327,8 @@ public class CustomizeWindow extends JFrame {
                     }
                 }
                 setSelectedColorBorder(colorId);
-                if (colorSelectedLabel != null) {
-                    colorSelectedLabel.setText("Selected: " + getColorName(colorId));
+                if (colorSelectedLabel != null && info != null) {
+                    colorSelectedLabel.setText("Selected: " + info.name);
                 }
                 priceLabel.setText("Owned");
                 btn.setLocked(false);
@@ -361,33 +336,10 @@ public class CustomizeWindow extends JFrame {
             }
         });
 
-        // add the cell (not just the button) to the grid
         grid.add(cell);
     }
 
-
-
-    private String getColorName(int id) {
-        switch (id) {
-            case PlayerCosmetics.COLOR_RED:          return "Red";
-            case PlayerCosmetics.COLOR_ORANGE:       return "Orange";
-            case PlayerCosmetics.COLOR_YELLOW:       return "Yellow";
-            case PlayerCosmetics.COLOR_DARK_GREEN:   return "Dark Green";
-            case PlayerCosmetics.COLOR_GREEN:        return "Green";
-            case PlayerCosmetics.COLOR_LIME:         return "Lime";
-            case PlayerCosmetics.COLOR_DARK_BLUE:    return "Dark Blue";
-            case PlayerCosmetics.COLOR_TEAL:         return "Teal";
-            case PlayerCosmetics.COLOR_LIGHT_BLUE:   return "Light Blue";
-            case PlayerCosmetics.COLOR_PURPLE:       return "Purple";
-            case PlayerCosmetics.COLOR_LAVENDER:     return "Lavender";
-            case PlayerCosmetics.COLOR_PINK:         return "Pink";
-            case PlayerCosmetics.COLOR_BLACK:        return "Black";
-            case PlayerCosmetics.COLOR_DARK_GRAY:    return "Dark Gray";
-            case PlayerCosmetics.COLOR_DEFAULT_GRAY: return "Default";
-            default: return "Unknown";
-        }
-    }
-
+    // setSelectedColorBorder - Highlights the currently selected color tile
     private void setSelectedColorBorder(int colorId) {
         for (int i = 0; i < colorButtons.length; i++) {
             if (colorButtons[i] instanceof ColorTileButton) {
@@ -396,10 +348,12 @@ public class CustomizeWindow extends JFrame {
         }
     }
 
+    // ---------- COSMETIC HELPERS ----------
+
+    // createCosmeticCell - Builds a cosmetic tile+price cell with purchase/equip logic
     private JPanel createCosmeticCell(int index) {
         CosmeticInfo info = CosmeticInfo.ALL[index];
 
-        // ---- main clickable tile ----
         TileButton btn = new TileButton("");
         Dimension d = new Dimension(TILE_SIZE, TILE_SIZE);
         btn.setPreferredSize(d);
@@ -415,7 +369,6 @@ public class CustomizeWindow extends JFrame {
 
         cosmeticButtons[index] = btn;
 
-        // ---- price row (gold icon + small text) ----
         JPanel priceRow = new JPanel();
         priceRow.setOpaque(false);
         priceRow.setLayout(new BoxLayout(priceRow, BoxLayout.X_AXIS));
@@ -436,7 +389,6 @@ public class CustomizeWindow extends JFrame {
         priceRow.add(priceLabel);
         priceRow.add(Box.createHorizontalGlue());
 
-        // ---- wrap tile + price in a vertical cell ----
         JPanel cell = new JPanel();
         cell.setOpaque(false);
         cell.setLayout(new BoxLayout(cell, BoxLayout.Y_AXIS));
@@ -448,10 +400,8 @@ public class CustomizeWindow extends JFrame {
         cell.add(Box.createRigidArea(new Dimension(0, 4)));
         cell.add(priceRow);
 
-        // initial lock visual
         btn.setLocked(!ownedAtOpen);
 
-        // click: equip if owned, else buy
         btn.addActionListener(e -> {
             boolean ownedNow = isUnlockedBit(info.id) || info.goldCost == 0;
 
@@ -470,7 +420,6 @@ public class CustomizeWindow extends JFrame {
                 return;
             }
 
-            // locked -> purchase with gold
             if (confirmAndSpendGold(info.name, info.goldCost)) {
                 unlockBit(info.id);
                 if (account != null) {
@@ -492,13 +441,11 @@ public class CustomizeWindow extends JFrame {
         return cell;
     }
 
-
-
+    // loadCosmeticIcon - Loads and scales a cosmetic icon by filename
     private static Icon loadCosmeticIcon(String fileName, int targetSize) {
         if (fileName == null) {
             return null;
         }
-        // path inside src: src/game/resources/images/<file>
         java.net.URL url = CustomizeWindow.class.getResource(
                 "/game/resources/images/" + fileName);
         if (url == null) {
@@ -511,6 +458,7 @@ public class CustomizeWindow extends JFrame {
         return new ImageIcon(scaled);
     }
 
+    // setSelectedCosmeticBorder - Highlights the currently selected cosmetic tile
     private void setSelectedCosmeticBorder(int index) {
         for (int i = 0; i < cosmeticButtons.length; i++) {
             if (cosmeticButtons[i] instanceof TileButton) {
@@ -519,26 +467,29 @@ public class CustomizeWindow extends JFrame {
         }
     }
 
-    private JPanel createMultiplierCell(String text, int index) {
-        TileButton btn = new TileButton(text);
+    // ---------- MULTIPLIER HELPERS ----------
+
+    // createMultiplierCell - Builds a multiplier tile+price cell with purchase/equip logic
+    private JPanel createMultiplierCell(MultiplierInfo info) {
+        TileButton btn = new TileButton(info.label);
         Dimension d = new Dimension(TILE_SIZE, TILE_SIZE);
         btn.setPreferredSize(d);
         btn.setMinimumSize(d);
         btn.setMaximumSize(d);
 
         btn.setForeground(UiColors.PLAYER_BLACK);
+        int index = info.index;
+        int bitIndex = info.bitIndex;
+        int cost = info.diamondCost;
+
         multiplierButtons[index] = btn;
 
-        // ---- price row (diamond icon + small text) ----
         JPanel priceRow = new JPanel();
         priceRow.setOpaque(false);
         priceRow.setLayout(new BoxLayout(priceRow, BoxLayout.X_AXIS));
 
-        Icon diamondIcon = loadCosmeticIcon("diamond.png", 36); // make sure this file exists
+        Icon diamondIcon = loadCosmeticIcon("diamond.png", 36);
         JLabel diamondLabel = new JLabel(diamondIcon);
-
-        int cost = MULT_COSTS[index];
-        int bitIndex = MULTIPLIER_BIT_BASE + index;
 
         boolean ownedAtOpen = isUnlockedBit(bitIndex) || cost == 0;
         String priceText = ownedAtOpen ? "Owned" : String.valueOf(cost);
@@ -553,7 +504,6 @@ public class CustomizeWindow extends JFrame {
         priceRow.add(priceLabel);
         priceRow.add(Box.createHorizontalGlue());
 
-        // ---- wrap tile + price in cell ----
         JPanel cell = new JPanel();
         cell.setOpaque(false);
         cell.setLayout(new BoxLayout(cell, BoxLayout.Y_AXIS));
@@ -565,10 +515,8 @@ public class CustomizeWindow extends JFrame {
         cell.add(Box.createRigidArea(new Dimension(0, 4)));
         cell.add(priceRow);
 
-        // initial lock visual
         btn.setLocked(!ownedAtOpen);
 
-        // click: equip if owned, else buy with diamonds
         btn.addActionListener(e -> {
             boolean ownedNow = isUnlockedBit(bitIndex) || cost == 0;
 
@@ -581,14 +529,13 @@ public class CustomizeWindow extends JFrame {
                 }
                 setSelectedMultiplierBorder(index);
                 if (multiplierSelectedLabel != null) {
-                    multiplierSelectedLabel.setText("Selected: " + text);
+                    multiplierSelectedLabel.setText("Selected: " + info.label);
                 }
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
 
-            // locked -> purchase with diamonds
-            if (confirmAndSpendDiamonds(text, cost)) {
+            if (confirmAndSpendDiamonds(info.label, cost)) {
                 unlockBit(bitIndex);
                 if (account != null) {
                     account.setMultiplier(index);
@@ -598,7 +545,7 @@ public class CustomizeWindow extends JFrame {
                 }
                 setSelectedMultiplierBorder(index);
                 if (multiplierSelectedLabel != null) {
-                    multiplierSelectedLabel.setText("Selected: " + text);
+                    multiplierSelectedLabel.setText("Selected: " + info.label);
                 }
                 priceLabel.setText("Owned");
                 btn.setLocked(false);
@@ -609,8 +556,7 @@ public class CustomizeWindow extends JFrame {
         return cell;
     }
 
-
-
+    // setSelectedMultiplierBorder - Highlights the currently selected multiplier tile
     private void setSelectedMultiplierBorder(int index) {
         for (int i = 0; i < multiplierButtons.length; i++) {
             if (multiplierButtons[i] instanceof TileButton) {
@@ -618,9 +564,10 @@ public class CustomizeWindow extends JFrame {
             }
         }
     }
-    
-    // ---------- purchase helpers ----------
 
+    // ---------- PURCHASE HELPERS ----------
+
+    // confirmAndSpendGold - Shows a dialog to buy an item with gold; returns true if purchased
     private boolean confirmAndSpendGold(String itemName, int cost) {
         if (account == null || cost <= 0) {
             return true;
@@ -638,13 +585,11 @@ public class CustomizeWindow extends JFrame {
         content.setOpaque(true);
         content.setBackground(bgColor);
 
-        // Title
         JLabel title = new JLabel("Unlock " + itemName + "?");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(GameFonts.get(24f, Font.BOLD));
         title.setForeground(Color.WHITE);
 
-        // Cost row: [gold icon] "Cost: ### gold"
         JPanel costRow = new JPanel();
         costRow.setOpaque(false);
         costRow.setLayout(new BoxLayout(costRow, BoxLayout.X_AXIS));
@@ -658,13 +603,11 @@ public class CustomizeWindow extends JFrame {
         costRow.add(Box.createRigidArea(new Dimension(10, 0)));
         costRow.add(costLabel);
 
-        // Balance
         JLabel balanceLabel = new JLabel("You have: " + current + " gold");
         balanceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         balanceLabel.setFont(GameFonts.get(16f, Font.PLAIN));
         balanceLabel.setForeground(Color.WHITE);
 
-        // Error label (for not enough gold)
         JLabel errorLabel = new JLabel(" ");
         errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         errorLabel.setFont(GameFonts.get(14f, Font.PLAIN));
@@ -680,7 +623,6 @@ public class CustomizeWindow extends JFrame {
         content.add(errorLabel);
         content.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        // Buttons row: Buy / Back
         JPanel buttonsRow = new JPanel();
         buttonsRow.setOpaque(false);
         buttonsRow.setLayout(new BoxLayout(buttonsRow, BoxLayout.X_AXIS));
@@ -710,8 +652,6 @@ public class CustomizeWindow extends JFrame {
         dialog.setContentPane(content);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
-
-        // --- Button logic ---
 
         buyButton.addActionListener(e -> {
             int gold = account.getVaultGold();
@@ -734,7 +674,7 @@ public class CustomizeWindow extends JFrame {
         return purchased[0];
     }
 
-
+    // confirmAndSpendDiamonds - Shows a dialog to buy an item with diamonds; returns true if purchased
     private boolean confirmAndSpendDiamonds(String itemName, int cost) {
         if (account == null || cost <= 0) {
             return true;
@@ -752,13 +692,11 @@ public class CustomizeWindow extends JFrame {
         content.setOpaque(true);
         content.setBackground(bgColor);
 
-        // Title
         JLabel title = new JLabel("Unlock " + itemName + "?");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(GameFonts.get(24f, Font.BOLD));
         title.setForeground(Color.WHITE);
 
-        // Cost row: [diamond icon] "Cost: ### diamonds"
         JPanel costRow = new JPanel();
         costRow.setOpaque(false);
         costRow.setLayout(new BoxLayout(costRow, BoxLayout.X_AXIS));
@@ -772,13 +710,11 @@ public class CustomizeWindow extends JFrame {
         costRow.add(Box.createRigidArea(new Dimension(10, 0)));
         costRow.add(costLabel);
 
-        // Balance
         JLabel balanceLabel = new JLabel("You have: " + current + " diamonds");
         balanceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         balanceLabel.setFont(GameFonts.get(16f, Font.PLAIN));
         balanceLabel.setForeground(Color.WHITE);
 
-        // Error label (for not enough diamonds)
         JLabel errorLabel = new JLabel(" ");
         errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         errorLabel.setFont(GameFonts.get(14f, Font.PLAIN));
@@ -794,7 +730,6 @@ public class CustomizeWindow extends JFrame {
         content.add(errorLabel);
         content.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        // Buttons row: Buy / Back
         JPanel buttonsRow = new JPanel();
         buttonsRow.setOpaque(false);
         buttonsRow.setLayout(new BoxLayout(buttonsRow, BoxLayout.X_AXIS));
@@ -825,8 +760,6 @@ public class CustomizeWindow extends JFrame {
         dialog.pack();
         dialog.setLocationRelativeTo(this);
 
-        // --- Button logic ---
-
         buyButton.addActionListener(e -> {
             int diamonds = account.getVaultDiamonds();
             if (diamonds < cost) {
@@ -848,11 +781,9 @@ public class CustomizeWindow extends JFrame {
         return purchased[0];
     }
 
+    // ---------- UNLOCK HELPERS ----------
 
-    
-    // ---------- unlock helpers ----------
-
-    /** Check if a particular unlock bit is set on the account. */
+    // isUnlockedBit - Returns true if a given unlock bit is set on the account
     private boolean isUnlockedBit(int bitIndex) {
         if (account == null || bitIndex < 0 || bitIndex >= 63) {
             return false;
@@ -861,7 +792,7 @@ public class CustomizeWindow extends JFrame {
         return (mask & (1L << bitIndex)) != 0L;
     }
 
-    /** Set a bit in account.unlocks to mark an item as owned. */
+    // unlockBit - Sets an unlock bit on the account
     private void unlockBit(int bitIndex) {
         if (account == null || bitIndex < 0 || bitIndex >= 63) {
             return;
@@ -870,5 +801,4 @@ public class CustomizeWindow extends JFrame {
         mask |= (1L << bitIndex);
         account.setUnlocks(mask);
     }
-
 }

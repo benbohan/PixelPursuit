@@ -4,6 +4,12 @@ import javax.swing.JPasswordField;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * Rounded password input field for login dialogs:
+ *  - Draws a semi-transparent dark rounded rectangle as the background.
+ *  - Adds inner padding so text doesn’t sit against the edge.
+ *  - Uses a simple gray rounded border to match the game’s UI theme.
+ */
 public class RoundedPasswordField extends JPasswordField {
 
     private static final long serialVersionUID = 1L;

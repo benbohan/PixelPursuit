@@ -1,47 +1,45 @@
 package game.scoring;
 
 import game.gameplay.Session;
-import game.settings.*;
+import game.settings.Difficulty;
+import game.settings.GameConfig;
 
 /**
- * Responsible for turning raw Session numbers (time survived, gold earned)
- * into a final payout using the current Difficulty and multiplier rules.
- *
- * Scoring model:
- *   - baseGold = timeGold + pickupGold
- *   - finalGold = baseGold * multiplier
- *   - finalDiamonds = pickupDiamonds * multiplier
- *   - multiplier is 0x on death, 1x on easy escape, 2x on hard escape.
+ * ScoreSystem:
+ *  - Converts raw Session stats into final gold and diamond payouts.
+ *  - Applies Difficulty and account multiplier rules via Multiplier.
+ *  - Returns a SessionResult with all breakdown fields filled.
  */
 public final class ScoreSystem {
 
+    // ---------- SCORING ----------
 
-    // Compute - a complete SessionResult for the given run.
+    // compute - Convenience overload that ignores account multiplier (treated as 1x)
     public SessionResult compute(Session session,
                                  Difficulty difficulty,
                                  boolean escaped) {
-
-    	return compute(session, difficulty, escaped, -1);
+        return compute(session, difficulty, escaped, -1);
     }
-    
+
+    // compute - Full scoring with difficulty, escape flag, and account multiplier index
     public SessionResult compute(Session session,
-            Difficulty difficulty,
-            boolean escaped,
-            int accountMultIndex) {
+                                 Difficulty difficulty,
+                                 boolean escaped,
+                                 int accountMultIndex) {
 
-		if (difficulty == null) {
-		difficulty = GameConfig.getCurrentDifficulty();
-	}
+        if (difficulty == null) {
+            difficulty = GameConfig.getCurrentDifficulty();
+        }
 
-        int timeGold   = session.getTimeGold();
-        int pickupGold = session.getPickupGold();
-        int baseGold   = timeGold + pickupGold;
+        int timeGold          = session.getTimeGold();
+        int pickupGold        = session.getPickupGold();
+        int baseGold          = timeGold + pickupGold;
         int diamondsCollected = session.getPickupDiamonds();
 
         Multiplier multiplier = Multiplier.forOutcome(difficulty, escaped, accountMultIndex);
 
-        int finalGold = (int) Math.round(baseGold * multiplier.getValue());
-        int finalDiamonds = (int) Math.round(diamondsCollected * multiplier.getValue());
+        int finalGold      = (int) Math.round(baseGold * multiplier.getValue());
+        int finalDiamonds  = (int) Math.round(diamondsCollected * multiplier.getValue());
         double timeSeconds = session.getElapsedTimeSeconds();
 
         return new SessionResult(

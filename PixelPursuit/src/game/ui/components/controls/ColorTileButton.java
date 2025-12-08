@@ -3,6 +3,12 @@ package game.ui.components.controls;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Solid-color tile button for the customize menu:
+ *  - Renders a rounded rectangle filled with a given color.
+ *  - Shows a thick white border when selected.
+ *  - Can darken with an overlay when locked to indicate unavailable colors.
+ */
 public class ColorTileButton extends JButton {
 
     private static final long serialVersionUID = 1L;
@@ -11,7 +17,7 @@ public class ColorTileButton extends JButton {
 
     private boolean selected = false;     // selected color tile
     private boolean locked   = false;     // locked color tile
-    private final Color fill;            // fill tile color 
+    private final Color fill;             // fill tile color 
 
     // ---------- CONSTRUCTORS ----------
 

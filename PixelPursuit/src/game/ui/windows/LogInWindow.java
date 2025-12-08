@@ -10,9 +10,16 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * LogInWindow:
+ *  - Fullscreen login screen with background art and rounded inputs.
+ *  - Lets the player log in or create an account, then opens the main menu.
+ */
 public class LogInWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
+
+    // ---------- FIELDS ----------
 
     private final WindowManager windowManager;
     private final AccountManager accountManager;
@@ -26,6 +33,9 @@ public class LogInWindow extends JFrame {
     private int screenHeight;
     private int screenWidth;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // LogInWindow - Builds the login/create account screen and wires button actions
     public LogInWindow(WindowManager windowManager) {
         super("Pixel Pursuit - Login");
 
@@ -60,7 +70,6 @@ public class LogInWindow extends JFrame {
         loginLabel.setFont(GameFonts.get(screenHeight / 30f, Font.BOLD));
         loginLabel.setForeground(Color.WHITE);
 
-        // Rounded text fields
         usernameField = new RoundedTextField();
         passwordField = new RoundedPasswordField();
         styleTextField(usernameField);
@@ -78,13 +87,11 @@ public class LogInWindow extends JFrame {
         userLabel.setHorizontalAlignment(SwingConstants.LEFT);
         passLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // Center rows as a group
         userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         passLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
         passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Buttons
         RoundedHoverButton loginButton  = createMenuButton("Log In");
         RoundedHoverButton createButton = createMenuButton("Create Account");
         RoundedHoverButton exitButton   = createMenuButton("Exit");
@@ -96,12 +103,10 @@ public class LogInWindow extends JFrame {
 
         // ---------- LAYOUT MATH ----------
 
-        // 1) Shrink gap between labels and fields
         int labelGap  = Math.max(8, screenHeight / 120);
         int buttonGap = Math.max(10, screenHeight / 80);
 
-        // Give labels a fixed width so rows align nicely
-        int labelWidth = screenWidth / 8;  // tweak if needed
+        int labelWidth = screenWidth / 8;
         Dimension labelSize = new Dimension(labelWidth, userLabel.getPreferredSize().height);
         userLabel.setPreferredSize(labelSize);
         userLabel.setMinimumSize(labelSize);
@@ -110,10 +115,8 @@ public class LogInWindow extends JFrame {
         passLabel.setMinimumSize(labelSize);
         passLabel.setMaximumSize(labelSize);
 
-        // Total width of "Username: [box]" row
         int rowWidth = labelWidth + labelGap + fieldSize.width;
 
-        // 2) Make login + gap + create visually (0.9 scale) == rowWidth
         float idleScale = RoundedHoverButton.IDLE_SCALE;  // 0.9f
         int loginButtonWidth = Math.round((rowWidth - buttonGap) / (2 * idleScale));
         Dimension loginButtonSize = new Dimension(loginButtonWidth, buttonHeight);
@@ -124,7 +127,6 @@ public class LogInWindow extends JFrame {
         createButton.setMaximumSize(loginButtonSize);
         createButton.setMinimumSize(loginButtonSize);
 
-        // Exit wider for visual balance
         int exitPhysicalWidth = (int) Math.round(rowWidth * 1.175);
         Dimension exitSize = new Dimension(exitPhysicalWidth, buttonHeight);
         exitButton.setPreferredSize(exitSize);
@@ -162,7 +164,7 @@ public class LogInWindow extends JFrame {
         loginPanel.add(passRow);
         loginPanel.add(Box.createRigidArea(new Dimension(0, screenHeight / 80)));
 
-        // Buttons row: Log In + Create Account side by side
+        // Buttons row: Log In + Create Account
         JPanel buttonRow = new JPanel();
         buttonRow.setOpaque(false);
         buttonRow.setLayout(new BoxLayout(buttonRow, BoxLayout.X_AXIS));
@@ -175,7 +177,7 @@ public class LogInWindow extends JFrame {
         loginPanel.add(buttonRow);
         loginPanel.add(Box.createRigidArea(new Dimension(0, screenHeight / 100)));
 
-        // Exit row (centered, wider)
+        // Exit row
         JPanel exitRow = new JPanel();
         exitRow.setOpaque(false);
         exitRow.setLayout(new BoxLayout(exitRow, BoxLayout.X_AXIS));
@@ -187,7 +189,7 @@ public class LogInWindow extends JFrame {
 
         loginPanel.add(messageLabel);
 
-        // Place the whole login panel slightly down from the top
+        // Place the login panel slightly down from the top
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -196,6 +198,7 @@ public class LogInWindow extends JFrame {
         mainPanel.add(loginPanel, gbc);
 
         // ---------- BUTTON ACTIONS ----------
+
         loginButton.addActionListener(e -> handleLogin());
         createButton.addActionListener(e -> handleCreateAccount());
         exitButton.addActionListener(e -> System.exit(0));
@@ -203,8 +206,9 @@ public class LogInWindow extends JFrame {
         setVisible(true);
     }
 
-    // ---------- logic ----------
+    // ---------- LOGIC ----------
 
+    // handleLogin - Validates input and attempts to log into an existing account
     private void handleLogin() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
@@ -223,6 +227,7 @@ public class LogInWindow extends JFrame {
         }
     }
 
+    // handleCreateAccount - Creates a new account if possible and logs in
     private void handleCreateAccount() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
@@ -241,18 +246,21 @@ public class LogInWindow extends JFrame {
         }
     }
 
+    // openMainMenu - Stores the account on WindowManager and shows the main menu
     private void openMainMenu(Account acc) {
         windowManager.setCurrentAccount(acc);
         windowManager.showMainMenu();
     }
 
+    // setMessage - Updates the status line text and color
     private void setMessage(String text, Color color) {
         messageLabel.setText(text);
         messageLabel.setForeground(color);
     }
 
-    // ---------- styling helpers ----------
+    // ---------- STYLING HELPERS ----------
 
+    // styleTextField - Applies shared size and font styling to rounded text fields
     private void styleTextField(JTextField field) {
         field.setPreferredSize(fieldSize);
         field.setMaximumSize(fieldSize);
@@ -266,6 +274,7 @@ public class LogInWindow extends JFrame {
         field.setCaretColor(Color.WHITE);
     }
 
+    // createMenuButton - Creates a rounded menu button with screen-based font size
     private RoundedHoverButton createMenuButton(String text) {
         RoundedHoverButton button = new RoundedHoverButton(text);
         int buttonFontSize = Math.max(18, Math.min(screenHeight / 34, 30));

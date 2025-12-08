@@ -8,6 +8,9 @@ import game.scoring.*;
 import game.settings.*;
 import game.ui.components.panels.*;
 import game.ui.theme.*;
+import game.cosmetics.PlayerCosmetics;
+import game.cosmetics.MultiplierInfo;
+import game.ui.components.controls.RoundedHoverButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +20,16 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+/**
+ * GameWindow - Top-level window for running a game session.
+ *  - Builds maze, runner, chasers, and in-game HUD.
+ *  - Owns the GamePanel and end-of-run summary dialog flow.
+ */
 public class GameWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
+
+    // ---------- FIELDS ----------
 
     private final WindowManager windowManager;
     private final Account currentAccount;
@@ -29,8 +39,14 @@ public class GameWindow extends JFrame {
     private final GamePanel gamePanel;
     private final LootDisplayPanel lootDisplay;
 
+    private final Color runnerColor;
+    private final int runnerCosmeticId;
+
     private boolean gameOver = false;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // GameWindow - Creates the full-screen game window and starts a new session
     public GameWindow(WindowManager windowManager, Account account) {
         super("Pixel Pursuit - Game");
         this.windowManager = windowManager;
@@ -38,12 +54,22 @@ public class GameWindow extends JFrame {
         this.scoreSystem = new ScoreSystem();
         this.difficulty = GameConfig.getCurrentDifficulty();
 
+        // load player appearance from account
+        if (currentAccount != null) {
+            this.runnerColor = PlayerCosmetics.getRunnerColor(currentAccount);
+            int equippedCosmetic = PlayerCosmetics.getEquippedCosmetic(currentAccount);
+            this.runnerCosmeticId = equippedCosmetic;
+        } else {
+            this.runnerColor = PlayerCosmetics.DEFAULT_COLOR;
+            this.runnerCosmeticId = -1;
+        }
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setResizable(false);
 
-        // --- world / gameplay setup ---
-        Maze maze = new Maze(); // 32x18 with basic layout
+        // world / gameplay setup
+        Maze maze = new Maze();
         Runner runner = new Runner(maze, maze.getEntranceX(), maze.getEntranceY());
         this.session = new Session(maze, runner);
 
@@ -53,7 +79,7 @@ public class GameWindow extends JFrame {
         int baseY = maze.getExitY();
 
         for (int i = 0; i < chaserCount; i++) {
-            int dy = (i - (chaserCount - 1) / 2); // -1,0,1 pattern for 3; 0,1 for 2; etc.
+            int dy = (i - (chaserCount - 1) / 2);
             int spawnY = baseY + 2 * dy;
 
             // clamp inside borders
@@ -68,12 +94,13 @@ public class GameWindow extends JFrame {
             session.addChaser(chaser);
         }
 
-        // --- background frame art ---
+        // background frame art
         BackgroundPanel mainPanel = new BackgroundPanel("/game/resources/images/gameBackground.png");
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
 
         // ---------- LOOT DISPLAY ----------
+
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
 
@@ -83,7 +110,7 @@ public class GameWindow extends JFrame {
                 0.0   // time
         );
 
-        // NEW: set multiplier + difficulty for the in-game HUD
+        // set multiplier + difficulty for the in-game HUD
         double equippedMult = getEquippedMultiplierValue();
         lootDisplay.setMultiplierAndDifficulty(equippedMult, difficulty.getDisplayName());
 
@@ -96,7 +123,7 @@ public class GameWindow extends JFrame {
         topBar.add(rightBox, BorderLayout.EAST);
         mainPanel.add(topBar, BorderLayout.NORTH);
 
-        // --- center game panel ---
+        // center game panel
         this.gamePanel = new GamePanel(session, this);
         mainPanel.add(gamePanel, BorderLayout.CENTER);
 
@@ -104,19 +131,40 @@ public class GameWindow extends JFrame {
         SwingUtilities.invokeLater(gamePanel::requestFocusInWindow);
     }
 
+    // ---------- ACCESSORS ----------
+
+    // getRunnerColor - Returns the runner's color for rendering
+    public Color getRunnerColor() {
+        return runnerColor;
+    }
+
+    // getRunnerCosmeticId - Returns the equipped cosmetic id, or -1 if none
+    public int getRunnerCosmeticId() {
+        return runnerCosmeticId;
+    }
+
+    // getCurrentAccount - Returns the account tied to this game window
+    public Account getCurrentAccount() {
+        return currentAccount;
+    }
+
+    // getSession - Returns the underlying Session for this run
     public Session getSession() {
         return session;
     }
 
+    // ---------- GAME FLOW ----------
+
+    // handleRunnerReachedExit - Called when the runner reaches the maze exit
     public void handleRunnerReachedExit() {
         if (gameOver) return;
         gameOver = true;
 
         gamePanel.stopMovement();
-
-        showEndOfRunDialog(/* escaped = */ true);
+        showEndOfRunDialog(true);
     }
 
+    // updateHudFromSession - Syncs HUD values from the current session state
     public void updateHudFromSession() {
         if (lootDisplay == null) return;
 
@@ -125,29 +173,29 @@ public class GameWindow extends JFrame {
         double time = session.getElapsedTimeSeconds();
 
         if (currentAccount != null) {
-            // Keep "free" balances in sync with what you're carrying this run
             currentAccount.setFreeGold(runGold);
             currentAccount.setFreeDiamonds(runDiamonds);
         }
 
-        // In GAME context, LootDisplayPanel expects (gold, diamonds)
         lootDisplay.setAmounts(runGold, runDiamonds);
         lootDisplay.setTime(time);
 
-        // Ensure multiplier/difficulty line is also kept up to date
         double equippedMult = getEquippedMultiplierValue();
         lootDisplay.setMultiplierAndDifficulty(equippedMult, difficulty.getDisplayName());
     }
 
+    // handleRunnerDied - Called when a chaser catches the runner
     public void handleRunnerDied() {
         if (gameOver) return;
         gameOver = true;
 
         gamePanel.stopMovement();
-
-        showEndOfRunDialog(/* escaped = */ false);
+        showEndOfRunDialog(false);
     }
 
+    // ---------- END-OF-RUN DIALOG ----------
+
+    // showEndOfRunDialog - Builds and shows the run summary dialog
     private void showEndOfRunDialog(boolean escaped) {
         int accountMultIndex = (currentAccount != null) ? currentAccount.getMultiplier() : -1;
 
@@ -158,9 +206,9 @@ public class GameWindow extends JFrame {
                 accountMultIndex
         );
 
-        // --- compute score components ---
-        int timeGold = result.getTimeGold();           // from surviving
-        int pickupGold = result.getPickupGold();       // from gold on the map
+        // compute score components
+        int timeGold = result.getTimeGold();
+        int pickupGold = result.getPickupGold();
         int baseGold = result.getBaseGold();
 
         int multiplier = result.getMultiplier().asInt();
@@ -172,7 +220,7 @@ public class GameWindow extends JFrame {
         int pickupDiamonds = result.getDiamondsCollected();
         int finalDiamonds = result.getFinalDiamonds();
 
-        // --- update Account with finalGold ---
+        // update Account with final rewards
         if (currentAccount != null) {
             double oldBest = currentAccount.getBestTime();
             if (timeSec > oldBest) {
@@ -185,12 +233,10 @@ public class GameWindow extends JFrame {
             int vaultDiamonds = currentAccount.getVaultDiamonds();
             int freeDiamonds = currentAccount.getFreeDiamonds();
 
-            // run is over – free loot resets
             freeGold = 0;
             freeDiamonds = 0;
 
-            // add rewards to vault
-            vaultGold += finalGold;        // gold reward from score system
+            vaultGold += finalGold;
             vaultDiamonds += finalDiamonds;
 
             currentAccount.setVaultGold(vaultGold);
@@ -199,13 +245,11 @@ public class GameWindow extends JFrame {
             currentAccount.setFreeDiamonds(freeDiamonds);
         }
 
-        // --- build dialog UI ---
         String titleText = escaped ? "You Escaped!" : "You Were Caught!";
 
         JDialog dialog = new JDialog(this, "Run Summary", true);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-        // Dark background to match game board
         Color bgColor = new Color(30, 30, 30);
 
         JPanel content = new JPanel();
@@ -214,39 +258,34 @@ public class GameWindow extends JFrame {
         content.setOpaque(true);
         content.setBackground(bgColor);
 
-        // Title
         JLabel titleLabel = new JLabel(titleText);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setFont(GameFonts.get(28f, Font.BOLD));
         titleLabel.setForeground(Color.WHITE);
 
-        // Time label
         JLabel timeLabel = new JLabel("Time survived: " + timeStr);
         timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         timeLabel.setFont(GameFonts.get(20f, Font.PLAIN));
         timeLabel.setForeground(Color.WHITE);
 
-        // --- Vertical equation using JTextPane so we can color some lines ---
+        // equation block using JTextPane so some lines can be colored
         JTextPane eqPane = new JTextPane();
         eqPane.setEditable(false);
         eqPane.setOpaque(false);
-        eqPane.setFont(GameFonts.get(20f, Font.PLAIN)); // your game font
+        eqPane.setFont(GameFonts.get(20f, Font.PLAIN));
         eqPane.setAlignmentX(Component.CENTER_ALIGNMENT);
         eqPane.setHighlighter(null);
 
         StyledDocument doc = eqPane.getStyledDocument();
 
-        // base style (white)
         Style normal = eqPane.addStyle("normal", null);
         StyleConstants.setForeground(normal, Color.WHITE);
 
-        // gold for final gold
         Style goldStyle = eqPane.addStyle("gold", normal);
-        StyleConstants.setForeground(goldStyle, new Color(255, 215, 0)); // gold
+        StyleConstants.setForeground(goldStyle, new Color(255, 215, 0));
 
-        // light blue for final diamonds
         Style diamondStyle = eqPane.addStyle("diamond", normal);
-        StyleConstants.setForeground(diamondStyle, new Color(150, 220, 255)); // light blue
+        StyleConstants.setForeground(diamondStyle, new Color(150, 220, 255));
 
         try {
             insertLine(doc, String.format("  Time Gold       %4d", timeGold), normal);
@@ -261,7 +300,6 @@ public class GameWindow extends JFrame {
             insertLine(doc, "", normal);
             insertLine(doc, "-------------------------", normal);
             insertLine(doc, "", normal);
-            // colored final gold line
             insertLine(doc, String.format("  Final Gold      %4d", finalGold), goldStyle);
             insertLine(doc, "", normal);
             insertLine(doc, "", normal);
@@ -271,7 +309,6 @@ public class GameWindow extends JFrame {
             insertLine(doc, "", normal);
             insertLine(doc, "-------------------------", normal);
             insertLine(doc, "", normal);
-            // colored final diamonds line
             insertLine(doc, String.format("  Final Diamonds  %4d", finalDiamonds), diamondStyle);
         } catch (BadLocationException ex) {
             ex.printStackTrace();
@@ -284,21 +321,20 @@ public class GameWindow extends JFrame {
         content.add(eqPane);
         content.add(Box.createRigidArea(new Dimension(0, 24)));
 
-        // --- Buttons: Play Again / Return to Menu stacked and bigger ---
-        EndButton playAgainBtn = new EndButton("Play Again");
-        EndButton menuBtn = new EndButton("Return to Menu");
+        RoundedHoverButton playAgainBtn = new RoundedHoverButton("Play Again");
+        RoundedHoverButton menuBtn = new RoundedHoverButton("Return to Menu");
 
-        // Bigger & same width
         Dimension buttonSize = new Dimension(380, 72);
         playAgainBtn.setPreferredSize(buttonSize);
         playAgainBtn.setMinimumSize(buttonSize);
         playAgainBtn.setMaximumSize(buttonSize);
+        playAgainBtn.setFont(GameFonts.get(22f, Font.BOLD));
+        playAgainBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         menuBtn.setPreferredSize(buttonSize);
         menuBtn.setMinimumSize(buttonSize);
         menuBtn.setMaximumSize(buttonSize);
-
-        playAgainBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        menuBtn.setFont(GameFonts.get(22f, Font.BOLD));
         menuBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         content.add(playAgainBtn);
@@ -308,7 +344,6 @@ public class GameWindow extends JFrame {
         dialog.setContentPane(content);
         dialog.pack();
 
-        // Make the window a bit taller and not too skinny
         int minW = 540;
         int minH = 520;
         int w = Math.max(dialog.getWidth(), minW);
@@ -317,14 +352,13 @@ public class GameWindow extends JFrame {
 
         dialog.setLocationRelativeTo(this);
 
-        // Button actions
         playAgainBtn.addActionListener(e -> {
             dialog.dispose();
             this.dispose();
             if (windowManager != null) {
-                windowManager.showGameWindow(); // new run via manager
+                windowManager.showGameWindow();
             } else {
-                new GameWindow(null, currentAccount); // fallback if ever needed
+                new GameWindow(null, currentAccount);
             }
         });
 
@@ -334,13 +368,16 @@ public class GameWindow extends JFrame {
             if (windowManager != null) {
                 windowManager.showMainMenu();
             } else {
-                new MainMenuWindow(null, currentAccount); // fallback
+                new MainMenuWindow(null, currentAccount);
             }
         });
 
         dialog.setVisible(true);
     }
 
+    // ---------- TEXT HELPERS ----------
+
+    // formatTime - Formats seconds as mm:ss for display labels
     private String formatTime(double seconds) {
         int total = (int) Math.floor(seconds);
         int mins = total / 60;
@@ -348,91 +385,19 @@ public class GameWindow extends JFrame {
         return String.format("%02d:%02d", mins, secs);
     }
 
+    // insertLine - Appends a styled line plus newline to the summary document
     private void insertLine(StyledDocument doc, String text, Style style) throws BadLocationException {
         doc.insertString(doc.getLength(), text + "\n", style);
     }
 
-    /**
-     * Map the account's equipped multiplier index (0–3) to the actual
-     * equipped multiplier value (2x, 3x, 5x, 10x).
-     *
-     * This is the "equipped" part; LootDisplayPanel will then multiply it
-     * by the mode multiplier (1.0 for Easy, 2.0 for Hard) internally.
-     */
+    // ---------- MULTIPLIER HELPER ----------
+
+    // getEquippedMultiplierValue - Returns the equipped account multiplier value (2,3,5,10) or 1
     private double getEquippedMultiplierValue() {
         if (currentAccount == null) {
-            return 1.0; // neutral if no account
+            return 1.0;
         }
-
         int idx = currentAccount.getMultiplier();
-        switch (idx) {
-            case 0: return 2.0;
-            case 1: return 3.0;
-            case 2: return 5.0;
-            case 3: return 10.0;
-            default: return 1.0; // fallback if unset or out-of-range
-        }
-    }
-
-    /** White rounded button, styled similar to your main UI buttons. */
-    private static class EndButton extends JButton {
-        private static final long serialVersionUID = 1L;
-        private static final int ARC = 22;
-        private static final float IDLE_SCALE = 0.95f;
-
-        public EndButton(String text) {
-            super(text);
-            setContentAreaFilled(false);
-            setBorderPainted(false);
-            setFocusPainted(false);
-            setOpaque(false);
-
-            // slightly larger font for big buttons
-            setFont(GameFonts.get(22f, Font.BOLD));
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int w = getWidth();
-            int h = getHeight();
-
-            float scale = getModel().isRollover() ? 1.0f : IDLE_SCALE;
-
-            int scaledW = (int) (w * scale);
-            int scaledH = (int) (h * scale);
-            int x = (w - scaledW) / 2;
-            int y = (h - scaledH) / 2;
-
-            Color fill = Color.WHITE;
-            Color border = fill.darker();
-
-            g2.setColor(fill);
-            g2.fillRoundRect(x, y, scaledW - 1, scaledH - 1, ARC, ARC);
-
-            g2.setColor(border);
-            g2.setStroke(new BasicStroke(3f));
-            g2.drawRoundRect(x + 1, y + 1, scaledW - 3, scaledH - 3, ARC, ARC);
-
-            // text
-            FontMetrics fm = g2.getFontMetrics(getFont());
-            String text = getText();
-            int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getAscent();
-            int tx = (w - textWidth) / 2;
-            int ty = (h + textHeight) / 2 - fm.getDescent();
-
-            g2.setColor(Color.BLACK);
-            g2.drawString(text, tx, ty);
-
-            g2.dispose();
-        }
-
-        @Override
-        protected void paintBorder(Graphics g) {
-            // border already painted in paintComponent
-        }
+        return MultiplierInfo.getValueForIndex(idx);
     }
 }

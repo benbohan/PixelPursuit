@@ -1,10 +1,15 @@
 package game.ui.components.controls;
-
 import game.ui.theme.GameFonts;
 
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Rounded UI button with a subtle hover grow effect:
+ *  - Renders a white rounded rectangle with a light gray border.
+ *  - Slightly scales up on hover, using a smaller idle scale the rest of the time.
+ *  - Provides helpers to build fixed-size menu buttons and two-button rows for layouts.
+ */
 public class RoundedHoverButton extends JButton {
 
     private static final long serialVersionUID = 1L;

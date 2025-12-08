@@ -6,36 +6,48 @@ import game.ui.windows.*;
 
 import javax.swing.*;
 
+/**
+ * WindowManager - Central controller for creating, showing, and updating all game windows.
+ */
 public class WindowManager {
+
+    // ---------- FIELDS ----------
 
     private MainMenuWindow mainMenuWindow;
 
     private final AccountManager accountManager;
     private Account currentAccount;
 
-    // Keep track of whatever window is currently on screen
+    // Tracks whichever window is currently on screen
     private JFrame currentWindow;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // WindowManager - Creates a new manager with its own AccountManager
     public WindowManager() {
         this.accountManager = new AccountManager();
     }
 
-    // --------- Accessors ---------
+    // ---------- ACCESSORS ----------
 
+    // getAccountManager - Returns the shared AccountManager instance
     public AccountManager getAccountManager() {
         return accountManager;
     }
 
+    // getCurrentAccount - Returns the currently active account, or null
     public Account getCurrentAccount() {
         return currentAccount;
     }
 
+    // setCurrentAccount - Updates the active account reference
     public void setCurrentAccount(Account acc) {
         this.currentAccount = acc;
     }
 
-    // --------- Window switching helpers ---------
+    // ---------- WINDOW SWITCHING ----------
 
+    // showWindow - Disposes the current window and shows the given one
     private void showWindow(JFrame newWindow) {
         if (currentWindow != null && currentWindow != newWindow) {
             currentWindow.dispose();
@@ -45,54 +57,56 @@ public class WindowManager {
         currentWindow.setVisible(true);
     }
 
-    // --------- Public APIs used by your windows ---------
+    // ---------- PUBLIC WINDOW APIS ----------
 
+    // showLoginWindow - Shows the login / create account screen
     public void showLoginWindow() {
         showWindow(new LogInWindow(this));
     }
 
+    // showMainMenu - Shows the main menu for the current account
     public void showMainMenu() {
         mainMenuWindow = new MainMenuWindow(this, currentAccount);
         showWindow(mainMenuWindow);
     }
 
+    // showGameWindow - Starts a new game window for the current account
     public void showGameWindow() {
         showWindow(new GameWindow(this, currentAccount));
     }
 
+    // showLeaderboardWindow - Opens the leaderboard as a separate window
     public void showLeaderboardWindow() {
         new LeaderboardWindow(this);
     }
 
+    // showCustomizeWindow - Opens the customization window as a dialog-style window
     public void showCustomizeWindow() {
-        // Customize is a separate dialog-style window; no need to replace main menu
         new CustomizeWindow(this, currentAccount);
     }
 
-    /**
-     * Persist account to disk and refresh any open UI that depends on it.
-     */
+    // ---------- ACCOUNT / UI SYNC ----------
+
+    // updateAccount - Saves account changes and refreshes any dependent UI
     public void updateAccount(Account account) {
         if (account == null) return;
 
-        // keep manager’s copy in sync
         this.currentAccount = account;
-
-        // save to accounts.txt (or wherever AccountManager writes)
         accountManager.updateAccount(account);
 
-        // if the main menu is open, refresh its loot display
         if (mainMenuWindow != null) {
             mainMenuWindow.refreshLootDisplay();
         }
     }
-    
+
+    // refreshMainMenuLoot - Refreshes loot display if the main menu is open
     public void refreshMainMenuLoot() {
         if (mainMenuWindow != null) {
             mainMenuWindow.refreshLootDisplay();
         }
     }
 
+    // exitGame - Closes the active window and exits the application
     public void exitGame() {
         if (currentWindow != null) {
             currentWindow.dispose();

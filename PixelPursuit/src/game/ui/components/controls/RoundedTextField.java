@@ -4,6 +4,12 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * Rounded text input field for username and simple text entries:
+ *  - Draws a semi-transparent dark rounded rectangle behind the text.
+ *  - Adds inner padding so the text doesn’t sit against the edges.
+ *  - Uses a simple gray rounded border to stay consistent with other inputs.
+ */
 public class RoundedTextField extends JTextField {
 
     private static final long serialVersionUID = 1L;

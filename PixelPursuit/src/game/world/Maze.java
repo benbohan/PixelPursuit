@@ -8,11 +8,14 @@ import java.util.Random;
 import game.settings.GameConfig;
 
 /**
- * A rectangular maze made of Cells.
- *
- * Default size is MAZE_WIDTH x MAZE_HEIGHT (from GameConfig).
+ * Rectangular maze made of Cells:
+ *  - Uses GameConfig for default width/height and difficulty-based settings.
+ *  - Can load ASCII mazes from mazes.txt or procedurally generate layouts.
+ *  - Tracks entrance/exit cells and offers helpers to clear entities and gold.
  */
 public class Maze {
+
+    // ---------- FIELDS ----------
 
     // Logical dimensions (in cells)
     private final int width;
@@ -23,23 +26,21 @@ public class Maze {
 
     private int entranceX, entranceY;
     private int exitX, exitY;
-    
+
     private final Random rng = new Random();
 
     // Path relative to PROJECT ROOT:
     // PixelPursuit/src/game/resources/data/mazes.txt
     private static final String MAZES_RELATIVE_PATH = "src/game/resources/data/mazes.txt";
 
-    /**
-     * Default constructor uses GameConfig dimensions.
-     */
+    // ---------- CONSTRUCTORS ----------
+
+    // Maze - Constructs a maze using default dimensions from GameConfig
     public Maze() {
         this(GameConfig.MAZE_WIDTH, GameConfig.MAZE_HEIGHT);
     }
 
-    /**
-     * Explicit-size constructor.
-     */
+    // Maze - Constructs a maze with an explicit width and height
     public Maze(int width, int height) {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Maze size must be positive");
@@ -56,7 +57,7 @@ public class Maze {
             }
         }
 
-     // Try to load a preset; if that fails, fall back to a random layout.
+        // Try to load a preset; if that fails, fall back to a random layout.
         if (!loadRandomPresetFromFile()) {
             generateRandomLayout();
         }
@@ -64,14 +65,23 @@ public class Maze {
 
     // ---------- DIMENSIONS / CELLS ----------
 
-    public int getWidth()  { return width; }
-    public int getHeight() { return height; }
+    // getWidth - Returns the maze width in cells
+    public int getWidth() {
+        return width;
+    }
 
+    // getHeight - Returns the maze height in cells
+    public int getHeight() {
+        return height;
+    }
+
+    // inBounds - Returns true if (x, y) is inside the maze grid
     public boolean inBounds(int x, int y) {
         return x >= 0 && x < width
             && y >= 0 && y < height;
     }
 
+    // getCell - Returns the Cell at (x, y) or throws if out of bounds
     public Cell getCell(int x, int y) {
         if (!inBounds(x, y)) {
             throw new IndexOutOfBoundsException(
@@ -80,20 +90,27 @@ public class Maze {
         return cells[y][x];
     }
 
+    // getEntranceX - Returns the entrance x-coordinate
     public int getEntranceX() { return entranceX; }
+
+    // getEntranceY - Returns the entrance y-coordinate
     public int getEntranceY() { return entranceY; }
+
+    // getExitX - Returns the exit x-coordinate
     public int getExitX()     { return exitX; }
+
+    // getExitY - Returns the exit y-coordinate
     public int getExitY()     { return exitY; }
 
+    // getEntranceCell - Returns the entrance cell
     public Cell getEntranceCell() { return getCell(entranceX, entranceY); }
+
+    // getExitCell - Returns the exit cell
     public Cell getExitCell()     { return getCell(exitX, exitY); }
 
     // ---------- FILE RESOLUTION ----------
 
-    /**
-     * Try to find mazes.txt whether the working directory is the project root
-     * or the bin/ folder.
-     */
+    // findMazesFile - Attempts to locate mazes.txt from common working directories
     private File findMazesFile() {
         // Helpful debug if something goes wrong
         System.out.println("Maze: working dir = " + new File(".").getAbsolutePath());
@@ -119,17 +136,7 @@ public class Maze {
 
     // ---------- PRESET MAP LOADING ----------
 
-    /**
-     * Try to load a random map from mazes.txt.
-     *
-     * File format:
-     *  - each non-empty line = one map
-     *  - map line contains height segments separated by '|'
-     *  - each segment is a row of width characters:
-     *      '#' = wall, anything else = floor
-     *
-     * Returns true on success, false on failure.
-     */
+    // loadRandomPresetFromFile - Loads a random maze line from mazes.txt or falls back
     private boolean loadRandomPresetFromFile() {
         File file = findMazesFile();
         if (!file.exists()) {
@@ -167,9 +174,7 @@ public class Maze {
         return applyMapLine(chosen);
     }
 
-    /**
-     * Apply a single map definition line to the maze.
-     */
+    // applyMapLine - Applies a single ASCII map line to the maze grid
     private boolean applyMapLine(String mapLine) {
         int w = getWidth();
         int h = getHeight();
@@ -181,7 +186,7 @@ public class Maze {
             return false;
         }
 
-        // Clear: floor, no gold
+        // Clear: floor, no gold, no diamonds
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 Cell c = getCell(x, y);
@@ -224,7 +229,7 @@ public class Maze {
         getCell(entranceX, entranceY).setWalkable(true);
         getCell(exitX, exitY).setWalkable(true);
 
-        // guarantee a path straight across the middle row
+        // Guarantee a path straight across the middle row
         for (int x = 1; x < w - 1; x++) {
             getCell(x, midRow).setWalkable(true);
         }
@@ -234,9 +239,7 @@ public class Maze {
 
     // ---------- FALLBACK BASIC LAYOUT ----------
 
-    /**
-     * Simple built-in layout if mazes.txt is missing or invalid.
-     */
+    // generateBasicLayout - Builds a simple built-in maze if presets are missing
     public final void generateBasicLayout() {
         int w = getWidth();
         int h = getHeight();
@@ -288,13 +291,8 @@ public class Maze {
             getCell(wallCol2, y).setWall(true);
         }
     }
-    
-    /**
-     * Procedurally generate a maze using a DFS carving algorithm plus a few
-     * extra openings to create multiple paths.
-     *
-     * Entrance is on the left mid row, exit on the right mid row (same as before).
-     */
+
+    // generateRandomLayout - Builds a maze using DFS carving plus extra openings
     private void generateRandomLayout() {
         int w = getWidth();
         int h = getHeight();
@@ -323,8 +321,8 @@ public class Maze {
         // Use odd coordinates for nicer wall structure.
         int startX = 1;
         int startY = entranceY;
-        if (startY <= 0) startY = 1;
-        if (startY >= h - 1) startY = h - 2;
+        if (startY <= 0)         startY = 1;
+        if (startY >= h - 1)     startY = h - 2;
         if (startY % 2 == 0 && startY + 1 < h - 1) {
             startY++;
         }
@@ -338,20 +336,15 @@ public class Maze {
         getCell(exitInnerX, exitInnerY).setWalkable(true);
 
         // 5) Add some loops to avoid a single long snake.
-        //    Slightly more loops = slightly less dense.
         addRandomLoops(w, h, (w * h) / 10);
 
-        // 6) Soften walls across the whole map (more open pockets),
-        //    but bias toward being more open on the right side (near exit).
+        // 6) Soften walls across the whole map, more open on the right side.
         softenWalls(w, h);
     }
 
-    /**
-     * Depth-first maze carving.
-     *
-     * We treat only odd interior coordinates as "rooms" and carve 2 cells at a time
-     * so walls stay at least 1 cell thick between corridors.
-     */
+    // ---------- MAZE GENERATION HELPERS ----------
+
+    // carveMazeDFS - Depth-first maze carving using 2-cell steps
     private void carveMazeDFS(int x, int y, boolean[][] visited) {
         visited[y][x] = true;
         getCell(x, y).setWalkable(true);
@@ -380,11 +373,8 @@ public class Maze {
             carveMazeDFS(nx, ny, visited);
         }
     }
-  
 
-    /**
-     * Fisher–Yates shuffle for direction arrays.
-     */
+    // shuffleDirections - Fisher–Yates shuffle for direction arrays
     private void shuffleDirections(int[][] dirs) {
         for (int i = dirs.length - 1; i > 0; i--) {
             int j = rng.nextInt(i + 1);
@@ -394,10 +384,7 @@ public class Maze {
         }
     }
 
-    /**
-     * Punch random holes in walls that already have at least two open neighbors.
-     * This turns a perfect maze into one with loops / alternate routes.
-     */
+    // addRandomLoops - Punches holes in walls to introduce loops / alternate routes
     private void addRandomLoops(int w, int h, int attempts) {
         for (int i = 0; i < attempts; i++) {
             int x = 1 + rng.nextInt(w - 2);
@@ -414,22 +401,22 @@ public class Maze {
             if (getCell(x, y + 1).isWalkable()) openNeighbors++;
             if (getCell(x, y - 1).isWalkable()) openNeighbors++;
 
-            // Open walls that touch corridors to build loops.
-            // Slight randomness so layouts stay varied.
+            // Open walls that touch corridors to build loops (with some randomness)
             if (openNeighbors >= 1 && rng.nextDouble() < 0.6) {
                 c.setWalkable(true);
             }
         }
-    }  
-    
+    }
+
+    // softenWalls - Softens walls based on neighbor openness, more on the right side
     private void softenWalls(int w, int h) {
         for (int x = 1; x < w - 1; x++) {
             double t = (double) x / (w - 1);  // 0.0 at left, 1.0 at right
 
             // Base chance to soften on the left, higher on the right
-            double baseProb = 0.10;          // ~10% chance left side
-            double extraProb = 0.18;         // up to ~28% on the far right
-            double openProb = baseProb + extraProb * t;
+            double baseProb  = 0.10; // ~10% chance on the left side
+            double extraProb = 0.18; // up to ~28% on the far right
+            double openProb  = baseProb + extraProb * t;
 
             for (int y = 1; y < h - 1; y++) {
                 Cell c = getCell(x, y);
@@ -452,8 +439,9 @@ public class Maze {
         }
     }
 
-    // ---------- helpers ----------
+    // ---------- BULK HELPERS ----------
 
+    // clearAllEntities - Removes all entities from every cell
     public void clearAllEntities() {
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
@@ -462,6 +450,7 @@ public class Maze {
         }
     }
 
+    // clearAllGold - Sets gold to 0 on every cell
     public void clearAllGold() {
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {

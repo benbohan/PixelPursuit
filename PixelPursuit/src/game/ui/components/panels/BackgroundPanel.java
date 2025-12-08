@@ -3,12 +3,20 @@ package game.ui.components.panels;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * BackgroundPanel - JPanel that draws a scaled background image behind its contents.
+ */
 public class BackgroundPanel extends JPanel {
-	private static final long serialVersionUID = 1L;
+
+    // ---------- FIELDS ----------
+
+    private static final long serialVersionUID = 1L;
     private Image backgroundImage;
 
+    // ---------- CONSTRUCTORS ----------
+
+    // BackgroundPanel - Loads the background image from the given classpath path
     public BackgroundPanel(String imagePath) {
-        // imagePath should look like "/game/resources/background.png"
         java.net.URL imgURL = getClass().getResource(imagePath);
         if (imgURL != null) {
             backgroundImage = new ImageIcon(imgURL).getImage();
@@ -17,6 +25,9 @@ public class BackgroundPanel extends JPanel {
         }
     }
 
+    // ---------- PAINTING ----------
+
+    // paintComponent - Draws the background image scaled to fill the panel
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

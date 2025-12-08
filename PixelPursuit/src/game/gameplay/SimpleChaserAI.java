@@ -16,14 +16,12 @@ import java.util.Random;
  */
 public class SimpleChaserAI implements ChaserAI {
 
-    // How close before we switch from roaming to direct chase
+    // ---------- FIELDS ----------
+
+    // detectionRadius - Manhattan distance threshold to switch from roaming to direct chase
     private final int detectionRadius;
 
-    public SimpleChaserAI() {
-        this.detectionRadius = GameConfig.getDetectionRadiusForCurrentDifficulty();
-    }
-
-    // How long to keep a roam target before giving up and picking a new one
+    // ROAM_PATH_LIFETIME - How long to keep a roam target before giving up
     private static final int ROAM_PATH_LIFETIME = 90;
 
     private final Random rng = new Random();
@@ -33,12 +31,19 @@ public class SimpleChaserAI implements ChaserAI {
     private int roamTargetY = -1;
     private int roamStepsRemaining = 0;
 
-    // Simple “heat map” of where this chaser has been
-    // visitCount[y][x] = how many times this chaser has stepped onto this cell.
+    // visitCount[y][x] - How many times this chaser has stepped onto each cell
     private int[][] visitCount = null;
 
-    // ---------- main update ----------
+    // ---------- CONSTRUCTORS ----------
 
+    // SimpleChaserAI - Uses difficulty config to set the detection radius
+    public SimpleChaserAI() {
+        this.detectionRadius = GameConfig.getDetectionRadiusForCurrentDifficulty();
+    }
+
+    // ---------- MAIN UPDATE ----------
+
+    // update - Chooses between chase/roam behavior and moves the chaser accordingly
     @Override
     public void update(Chaser chaser, Session session) {
         if (!chaser.isActive()) {
@@ -100,8 +105,9 @@ public class SimpleChaserAI implements ChaserAI {
         }
     }
 
-    // ---------- visit map helpers ----------
+    // ---------- VISIT MAP HELPERS ----------
 
+    // ensureVisitMap - Initializes or resizes the visit map to match the maze size
     private void ensureVisitMap(Maze maze) {
         int w = maze.getWidth();
         int h = maze.getHeight();
@@ -110,6 +116,7 @@ public class SimpleChaserAI implements ChaserAI {
         }
     }
 
+    // markVisited - Increments the visit count for the given cell
     private void markVisited(Maze maze, int x, int y) {
         ensureVisitMap(maze);
         if (maze.inBounds(x, y)) {
@@ -117,14 +124,16 @@ public class SimpleChaserAI implements ChaserAI {
         }
     }
 
-    // ---------- Roaming helpers ----------
+    // ---------- ROAMING HELPERS ----------
 
+    // clearRoamTarget - Resets the current roam target and its step budget
     private void clearRoamTarget() {
         roamTargetX = -1;
         roamTargetY = -1;
         roamStepsRemaining = 0;
     }
 
+    // hasValidRoamTarget - Returns true if the current roam target is usable
     private boolean hasValidRoamTarget(Maze maze) {
         if (roamTargetX < 0 || roamTargetY < 0) return false;
         if (!maze.inBounds(roamTargetX, roamTargetY)) return false;
@@ -132,10 +141,7 @@ public class SimpleChaserAI implements ChaserAI {
                 && roamStepsRemaining > 0;
     }
 
-    /**
-     * Pick a new walkable cell somewhere in the maze and remember it as
-     * the roam target, biased toward cells that have been visited less.
-     */
+    // pickNewRoamTarget - Chooses a new walkable roam cell, biased toward low-visit cells
     private void pickNewRoamTarget(Maze maze, int cx, int cy) {
         ensureVisitMap(maze);
         int w = maze.getWidth();
@@ -200,9 +206,7 @@ public class SimpleChaserAI implements ChaserAI {
         roamStepsRemaining = ROAM_PATH_LIFETIME;
     }
 
-    /**
-     * Take a random valid step (up/down/left/right) as a backup movement.
-     */
+    // randomWalk - Takes a random valid step as a backup movement
     private void randomWalk(Chaser chaser, Maze maze) {
         int[][] dirs = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
         int startIndex = rng.nextInt(dirs.length);
@@ -229,14 +233,9 @@ public class SimpleChaserAI implements ChaserAI {
         // If all neighbors blocked, stay put.
     }
 
-    // ---------- Shortest-path via BFS ----------
+    // ---------- SHORTEST PATH VIA BFS ----------
 
-    /**
-     * Use BFS to find a shortest path from (sx, sy) to (tx, ty) and
-     * move the chaser one step along that path.
-     *
-     * @return true if we moved, false if no path was found.
-     */
+    // moveAlongShortestPath - Uses BFS to step one tile along a shortest path to (tx, ty)
     private boolean moveAlongShortestPath(Chaser chaser,
                                           Maze maze,
                                           int sx, int sy,
@@ -339,10 +338,9 @@ public class SimpleChaserAI implements ChaserAI {
         return true;
     }
 
-    // shuffleDirs() is no longer used by BFS, but you can keep it
-    // in case you want randomness elsewhere.
+    // shuffleDirs - Fisher–Yates shuffle (currently unused, kept for future randomness)
     @SuppressWarnings("unused")
-	private void shuffleDirs(int[][] dirs) {
+    private void shuffleDirs(int[][] dirs) {
         for (int i = dirs.length - 1; i > 0; i--) {
             int j = rng.nextInt(i + 1);
             int[] tmp = dirs[i];
