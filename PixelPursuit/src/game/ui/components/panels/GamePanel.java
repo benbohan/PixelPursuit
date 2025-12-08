@@ -42,6 +42,8 @@ public class GamePanel extends JPanel implements KeyListener {
     private Image diamondScaled;
     private int diamondForCellSize = -1;
     private int diamondDrawSize = 0;
+    
+    private boolean paused = false;
 
     private final Timer movementTimer;
     private static final int MOVE_INTERVAL_MS = GameConfig.RUNNER_MOVE_INTERVAL_MS;
@@ -84,6 +86,10 @@ public class GamePanel extends JPanel implements KeyListener {
         }
 
         movementTimer = new Timer(MOVE_INTERVAL_MS, e -> {
+        	if (paused) {
+                return; // freeze game logic while paused
+            }
+        	
             runner.step();
 
             double dt = MOVE_INTERVAL_MS / 1000.0;
@@ -108,6 +114,11 @@ public class GamePanel extends JPanel implements KeyListener {
             repaint();
         });
         movementTimer.start();
+    }
+    
+    // Called by GameWindow when pause/resume happens
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     // ---------- PUBLIC API ----------
@@ -308,6 +319,10 @@ public class GamePanel extends JPanel implements KeyListener {
     // keyPressed - Handles WASD/arrow keys to set runner direction (space to stop)
     @Override
     public void keyPressed(KeyEvent e) {
+    	if (paused) {
+            return; // ignore presses while paused
+        }
+    	
         int key = e.getKeyCode();
 
         switch (key) {

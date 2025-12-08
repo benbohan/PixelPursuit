@@ -34,15 +34,6 @@ public final class GameConfig {
 
     // ---------- MOVEMENT & TIMING ----------
 
-    // Runner glide step in ms (Swing Timer in GamePanel)
-    public static final int RUNNER_MOVE_INTERVAL_MS = 330;
-
-    // Chaser step interval in seconds (used in Session)
-    public static final double CHASER_MOVE_INTERVAL_SEC = 0.6;
-
-    // Random gold spawn interval in seconds
-    public static final double GOLD_SPAWN_INTERVAL_SEC = 5;
-
     // Survival gold: how often and how much
     public static final int RUNNER_MOVE_INTERVAL_MS      = 300;
     public static final double CHASER_MOVE_INTERVAL_SEC  = 0.6;
