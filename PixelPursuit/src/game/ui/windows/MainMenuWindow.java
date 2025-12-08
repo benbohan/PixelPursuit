@@ -6,17 +6,24 @@ import game.ui.components.controls.*;
 import game.ui.components.panels.*;
 import game.ui.theme.*;
 import game.settings.*;
+import game.cosmetics.MultiplierInfo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * MainMenuWindow - Full-screen main menu with background art, loot HUD, and menu buttons.
+ */
 public class MainMenuWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    // ---------- FIELDS ----------
+
     private final WindowManager windowManager;
     private Account currentAccount;
+    private LootDisplayPanel lootDisplay;
 
     private int screenWidth;
     private int screenHeight;
@@ -27,8 +34,9 @@ public class MainMenuWindow extends JFrame {
     private int halfButtonWidth;
     private int fullButtonWidth;
 
-    // -------- Constructors --------
+    // ---------- CONSTRUCTORS ----------
 
+    // MainMenuWindow - Constructs the main menu for the given account
     public MainMenuWindow(WindowManager windowManager, Account account) {
         super("Pixel Pursuit - Main Menu");
         this.windowManager = windowManager;
@@ -36,45 +44,63 @@ public class MainMenuWindow extends JFrame {
         initUI();
     }
 
-    // -------- UI setup --------
+    // ---------- UI SETUP ----------
 
+    // initUI - Builds the background, loot HUD, menu buttons, and actions
     private void initUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setResizable(false);
 
-        // Screen Setup
+        // screen sizing
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         screenWidth  = screenSize.width;
         screenHeight = screenSize.height;
-        
+
         Dimension fieldSize = new Dimension(screenWidth / 4, screenHeight / 16);
         buttonHeight        = (int) (fieldSize.height * 0.8);
 
-        int labelGap  = Math.max(8, screenHeight / 120);
-        buttonGap     = Math.max(10, screenHeight / 80);
+        int labelGap   = Math.max(8, screenHeight / 120);
+        buttonGap      = Math.max(10, screenHeight / 80);
         int labelWidth = screenWidth / 8;
 
-        // Menu Setup
+        // layout math
         rowWidth = labelWidth + labelGap + fieldSize.width;
 
-        // Half buttons
         float idleScale = RoundedHoverButton.IDLE_SCALE; // 0.9f
         halfButtonWidth = Math.round((rowWidth - buttonGap) / (2 * idleScale));
-
-        // Full-width buttons
         fullButtonWidth = (int) Math.round(rowWidth * 1.175);
 
         // ---------- BACKGROUND ----------
+
         BackgroundPanel mainPanel = new BackgroundPanel("/game/resources/images/menuBackground.png");
         mainPanel.setLayout(new BorderLayout());
         add(mainPanel);
 
-        // ---------- LOOT DISPLAY ----------
+        // ---------- LOOT DISPLAY (TOP BAR) ----------
+
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
 
-        LootDisplayPanel lootDisplay = new LootDisplayPanel(currentAccount.getVaultGold(), currentAccount.getVaultDiamonds());
+        lootDisplay = new LootDisplayPanel(
+                currentAccount.getVaultGold(),
+                currentAccount.getVaultDiamonds()
+        );
+
+        double multValue = 1.0;
+        String difficultyName = "Unknown";
+
+        if (currentAccount != null) {
+            int multIndex = currentAccount.getMultiplier();
+            multValue = MultiplierInfo.getValueForIndex(multIndex);
+        }
+
+        Difficulty diff = GameConfig.getCurrentDifficulty();
+        if (diff != null) {
+            difficultyName = diff.getDisplayName();
+        }
+
+        lootDisplay.setMultiplierAndDifficulty(multValue, difficultyName);
 
         JPanel rightBox = new JPanel();
         rightBox.setOpaque(false);
@@ -86,12 +112,13 @@ public class MainMenuWindow extends JFrame {
         mainPanel.add(topBar, BorderLayout.NORTH);
 
         // ---------- CENTER MENU PANEL ----------
+
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         menuPanel.setOpaque(false);
         menuPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        int gapRow   = screenHeight / 90;
+        int gapRow = screenHeight / 90;
 
         // Row 1: Play (full)
         RoundedHoverButton playButton = RoundedHoverButton.createMenuButton(
@@ -99,16 +126,16 @@ public class MainMenuWindow extends JFrame {
         menuPanel.add(playButton);
         menuPanel.add(Box.createRigidArea(new Dimension(0, gapRow)));
 
-        // Row 2: Customize (left) / Settings (right)
+        // Row 2: Customize / Difficulty
         RoundedHoverButton customizeButton = RoundedHoverButton.createMenuButton(
                 "Customize", halfButtonWidth, buttonHeight, screenHeight);
         RoundedHoverButton settingsButton = RoundedHoverButton.createMenuButton(
-                "Settings", halfButtonWidth, buttonHeight, screenHeight);
+                "Difficulty", halfButtonWidth, buttonHeight, screenHeight);
         JPanel row2 = RoundedHoverButton.createButtonRow(customizeButton, settingsButton, buttonGap);
         menuPanel.add(row2);
         menuPanel.add(Box.createRigidArea(new Dimension(0, gapRow)));
 
-        // Row 3: Leaderboard (left) / Sign Out (right)
+        // Row 3: Leaderboard / Sign Out
         RoundedHoverButton leaderboardButton = RoundedHoverButton.createMenuButton(
                 "Leaderboard", halfButtonWidth, buttonHeight, screenHeight);
         RoundedHoverButton signOutButton = RoundedHoverButton.createMenuButton(
@@ -122,7 +149,7 @@ public class MainMenuWindow extends JFrame {
                 "Quit", fullButtonWidth, buttonHeight, screenHeight);
         menuPanel.add(quitButton);
 
-        // Show username under menu
+        // username label
         if (currentAccount != null) {
             menuPanel.add(Box.createRigidArea(new Dimension(0, screenHeight / 120)));
             JLabel userLabel = new JLabel("User: " + currentAccount.getUsername());
@@ -133,7 +160,7 @@ public class MainMenuWindow extends JFrame {
             menuPanel.add(userLabel);
         }
 
-        // Center the menu panel on the background
+        // center menu on background
         JPanel centerWrapper = new JPanel(new GridBagLayout());
         centerWrapper.setOpaque(false);
         centerWrapper.add(menuPanel);
@@ -141,7 +168,7 @@ public class MainMenuWindow extends JFrame {
 
         // ---------- BUTTON ACTIONS ----------
 
-        // Quit
+        // quitButton - Exits the game (via WindowManager if present)
         quitButton.addActionListener(e -> {
             if (windowManager != null) {
                 windowManager.exitGame();
@@ -150,13 +177,13 @@ public class MainMenuWindow extends JFrame {
             }
         });
 
-        // Sign Out
+        // signOutButton - Returns to login and clears current account
         signOutButton.addActionListener(e -> {
             windowManager.setCurrentAccount(null);
             windowManager.showLoginWindow();
         });
 
-        // Play
+        // playButton - Starts a new game if an account is loaded
         playButton.addActionListener(e -> {
             if (currentAccount == null) {
                 JOptionPane.showMessageDialog(
@@ -171,15 +198,14 @@ public class MainMenuWindow extends JFrame {
             if (windowManager != null) {
                 windowManager.showGameWindow();
             } else {
-                // fallback for standalone testing
                 SwingUtilities.invokeLater(() -> {
-                    dispose(); // close menu while in game
+                    dispose();
                     new GameWindow(windowManager, currentAccount);
                 });
             }
         });
 
-        // Customize
+        // customizeButton - Opens the customize window
         customizeButton.addActionListener(e -> {
             if (windowManager != null) {
                 windowManager.showCustomizeWindow();
@@ -188,34 +214,12 @@ public class MainMenuWindow extends JFrame {
             }
         });
 
-        // Settings
+        // settingsButton - Opens the difficulty window
         settingsButton.addActionListener(e -> {
-            Difficulty current = GameConfig.getCurrentDifficulty();
-            Difficulty[] options = Difficulty.values();
-
-            Difficulty choice = (Difficulty) JOptionPane.showInputDialog(
-                    this,
-                    "Select difficulty:",
-                    "Difficulty",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    options,
-                    current
-            );
-
-            if (choice != null) {
-                GameConfig.setCurrentDifficulty(choice);
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Difficulty set to " + choice.getDisplayName()
-                                + "\nHard runs pay out more final gold.",
-                        "Difficulty Updated",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-            }
+            new DifficultyWindow(windowManager);
         });
 
-        // Leaderboard
+        // leaderboardButton - Opens the leaderboard window or shows info if unavailable
         leaderboardButton.addActionListener(e -> {
             if (windowManager != null) {
                 windowManager.showLeaderboardWindow();
@@ -230,5 +234,31 @@ public class MainMenuWindow extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    // ---------- LOOT REFRESH ----------
+
+    // refreshLootDisplay - Syncs loot HUD with vault + multiplier + difficulty
+    public void refreshLootDisplay() {
+        if (lootDisplay == null || currentAccount == null) {
+            return;
+        }
+
+        lootDisplay.updateLoot(
+                currentAccount.getVaultGold(),
+                currentAccount.getVaultDiamonds()
+        );
+
+        double multValue = 1.0;
+        int multIndex = currentAccount.getMultiplier();
+        multValue = MultiplierInfo.getValueForIndex(multIndex);
+
+        String difficultyName = "Unknown";
+        Difficulty diff = GameConfig.getCurrentDifficulty();
+        if (diff != null) {
+            difficultyName = diff.getDisplayName();
+        }
+
+        lootDisplay.setMultiplierAndDifficulty(multValue, difficultyName);
     }
 }

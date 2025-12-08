@@ -4,11 +4,14 @@ import game.world.Cell;
 import game.world.Maze;
 
 /**
- * The player-controlled runner.
- *
- * Lives on the Maze grid (cell coordinates, not pixels).
+ * Player-controlled runner on the Maze grid:
+ *  - Lives in maze cell coordinates (x, y), not pixels.
+ *  - Supports “glide” movement that continues in a direction until stopped or blocked.
+ *  - Updates once per tick via step(), applying desired direction changes first.
  */
 public class Runner {
+
+    // ---------- FIELDS ----------
 
     private final Maze maze;
     private int x;
@@ -20,6 +23,13 @@ public class Runner {
     private int dirX = 0;
     private int dirY = 0;
 
+    // Direction the player wants to move next (used to change direction cleanly)
+    private int desiredDirX = 0;
+    private int desiredDirY = 0;
+
+    // ---------- CONSTRUCTORS ----------
+
+    // Runner - Creates a runner at (startX, startY) and registers it with the maze
     public Runner(Maze maze, int startX, int startY) {
         this.maze = maze;
         if (!maze.inBounds(startX, startY)) {
@@ -32,71 +42,118 @@ public class Runner {
         maze.getCell(x, y).addEntity(this);
     }
 
-    // --- position ---
+    // ---------- POSITION ----------
 
-    public int getX() { return x; }
-    public int getY() { return y; }
+    // getX - Returns the current x-coordinate in the maze grid
+    public int getX() {
+        return x;
+    }
 
+    // getY - Returns the current y-coordinate in the maze grid
+    public int getY() {
+        return y;
+    }
+
+    // getCell - Returns the maze Cell currently occupied by this runner
     public Cell getCell() {
         return maze.getCell(x, y);
     }
 
+    // ---------- STATE ----------
+
+    // isAlive - Returns true if the runner is still alive
     public boolean isAlive() {
         return alive;
     }
 
+    // kill - Marks the runner as dead so it no longer moves
     public void kill() {
         alive = false;
     }
 
-    // --- direction / glide control ---
+    // ---------- DIRECTION / GLIDE CONTROL ----------
 
-    /** Set the direction for continuous movement. (0,0) means stop. */
+    // setDirection - Sets the desired glide direction; (0,0) means stop
     public void setDirection(int dx, int dy) {
-        this.dirX = dx;
-        this.dirY = dy;
+        this.desiredDirX = dx;
+        this.desiredDirY = dy;
     }
 
-    public int getDirX() { return dirX; }
-    public int getDirY() { return dirY; }
+    // getDirX - Returns the current x-direction of glide movement
+    public int getDirX() {
+        return dirX;
+    }
 
-    /** Stop moving (used if you want a key to cancel glide). */
+    // getDirY - Returns the current y-direction of glide movement
+    public int getDirY() {
+        return dirY;
+    }
+
+    // stop - Immediately stops movement and clears desired direction
     public void stop() {
         this.dirX = 0;
         this.dirY = 0;
+        this.desiredDirX = 0;
+        this.desiredDirY = 0;
     }
 
-    /**
-     * Called each tick by the game loop.
-     * Moves one cell in the current direction, if any.
-     */
+    // ---------- TICK / UPDATE ----------
+
+    // step - Called each tick; updates direction then moves one cell if possible
     public void step() {
         if (!alive) return;
-        if (dirX == 0 && dirY == 0) return;  // no movement
-        moveBy(dirX, dirY);
+
+        // Try to switch to the desired direction if it is different and valid
+        if (desiredDirX != dirX || desiredDirY != dirY) {
+            if (canMove(desiredDirX, desiredDirY)) {
+                dirX = desiredDirX;
+                dirY = desiredDirY;
+            }
+        }
+
+        // Move one step in the current direction if possible
+        if (dirX == 0 && dirY == 0) {
+            return; // no current direction
+        }
+
+        if (canMove(dirX, dirY)) {
+            moveBy(dirX, dirY);
+        } else {
+            // Ran straight into a wall, stop
+            dirX = 0;
+            dirY = 0;
+        }
     }
 
-    /**
-     * Try to move by (dx, dy) one step.
-     * Checks bounds + walkable; does nothing if blocked.
-     */
-    public void moveBy(int dx, int dy) {
-        if (!alive) return;
+    // ---------- MOVEMENT HELPERS ----------
+
+    // canMove - Returns true if moving by (dx, dy) stays in-bounds and walkable
+    private boolean canMove(int dx, int dy) {
+        if (dx == 0 && dy == 0) return false;
 
         int newX = x + dx;
         int newY = y + dy;
 
         if (!maze.inBounds(newX, newY)) {
-            return; // out of maze
+            return false;
         }
-
-        Cell target = maze.getCell(newX, newY);
-        if (!target.isWalkable()) {
-            return; // wall later
+        if (!maze.getCell(newX, newY).isWalkable()) {
+            return false;
         }
+        return true;
+    }
 
-        // Move between cells
+    // moveBy - Moves by (dx, dy) one step if not blocked and runner is alive
+    public void moveBy(int dx, int dy) {
+        if (!alive) return;
+        if (!canMove(dx, dy)) return;
+
+        int newX = x + dx;
+        int newY = y + dy;
+
         Cell current = maze.getCell(x, y);
+        Cell target  = maze.getCell(newX, newY);
+
         current.removeEntity(this);
         target.addEntity(this);
 

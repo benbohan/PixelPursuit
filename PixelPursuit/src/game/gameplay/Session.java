@@ -10,175 +10,231 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * One running game session. Tracks elapsed time, run gold, time-based gold,
- * pickup-based gold, chasers, and random gold spawns.
+ * One running game session:
+ *  - Tracks elapsed time, survival gold, pickup gold, and diamond pickups.
+ *  - Owns the maze, runner, and all chasers for this single run.
+ *  - Handles per-tick updates: survival gold, chaser movement, loot spawns, and collisions.
  */
 public class Session {
 
-	private final Maze maze;
-	private final Runner runner;
-	private final List<Chaser> chasers = new ArrayList<>();
+    // ---------- FIELDS ----------
 
-	private double elapsedTimeSeconds = 0.0;
-	private boolean running = true;
+    private final Maze maze;
+    private final Runner runner;
+    private final List<Chaser> chasers = new ArrayList<>();
 
-	// Gold breakdown
-	private int runGold = 0; // total = timeGold + pickupGold
-	private int timeGold = 0; // from surviving
-	private int pickupGold = 0; // from gold on the map
+    private double elapsedTimeSeconds = 0.0;
+    private boolean running = true;
 
-	// Chaser movement pacing
-	private double chaserMoveAccumulator = 0.0;
-	// values pulled from GameConfig to keep magic numbers in one place
-	private static final double CHASER_MOVE_INTERVAL = GameConfig.CHASER_MOVE_INTERVAL_SEC; // seconds per step
+    // Gold breakdown
+    private int runGold = 0;        // total = timeGold + pickupGold
+    private int timeGold = 0;       // from surviving
+    private int pickupGold = 0;     // from gold on the map
+    private int pickupDiamonds = 0; // number of diamond pickups
 
-	// Gold spawning pacing
-	private double goldSpawnAccumulator = 0.0;
-	private static final double GOLD_SPAWN_INTERVAL = GameConfig.GOLD_SPAWN_INTERVAL_SEC; // seconds between spawns
+    // Chaser movement pacing
+    private double chaserMoveAccumulator = 0.0;
+    // values pulled from GameConfig to keep magic numbers in one place
+    private static final double CHASER_MOVE_INTERVAL =
+            GameConfig.CHASER_MOVE_INTERVAL_SEC; // seconds per step
 
-	// Survival gold pacing
-	private double survivalGoldAccumulator = 0.0;
-	private static final double SURVIVAL_GOLD_INTERVAL = GameConfig.SURVIVAL_GOLD_INTERVAL_SEC; // 1 sec
-	private static final int SURVIVAL_GOLD_PER_TICK = GameConfig.SURVIVAL_GOLD_PER_TICK; // base 1 gold per second
+    // Gold spawning pacing
+    private double goldSpawnAccumulator = 0.0;
+    private final double goldSpawnInterval;
+    private final double diamondChance;
 
-	private final Random rng = new Random();
+    // Survival gold pacing
+    private double survivalGoldAccumulator = 0.0;
+    private static final double SURVIVAL_GOLD_INTERVAL =
+            GameConfig.SURVIVAL_GOLD_INTERVAL_SEC; // seconds between survival ticks
+    private static final int SURVIVAL_GOLD_PER_TICK =
+            GameConfig.SURVIVAL_GOLD_PER_TICK;     // base gold per survival tick
 
-	public Session(Maze maze, Runner runner) {
-		this.maze = maze;
-		this.runner = runner;
-	}
+    private final Random rng = new Random();
 
-	public Maze getMaze() {
-		return maze;
-	}
+    // ---------- CONSTRUCTORS ----------
 
-	public Runner getRunner() {
-		return runner;
-	}
+    // Session - Creates a new game session using the given maze and runner
+    public Session(Maze maze, Runner runner) {
+        this.maze = maze;
+        this.runner = runner;
 
-	public List<Chaser> getChasers() {
-		return Collections.unmodifiableList(chasers);
-	}
+        this.goldSpawnInterval = GameConfig.getGoldSpawnIntervalForCurrentDifficulty();
+        this.diamondChance     = GameConfig.getDiamondChanceForCurrentDifficulty();
+    }
 
-	public void addChaser(Chaser chaser) {
-		if (chaser != null) {
-			chasers.add(chaser);
-		}
-	}
+    // ---------- ACCESSORS / INFO ----------
 
-	public double getElapsedTimeSeconds() {
-		return elapsedTimeSeconds;
-	}
+    // getMaze - Returns the maze used for this session
+    public Maze getMaze() {
+        return maze;
+    }
 
-	/** Total gold this run (time + pickups). */
-	public int getRunGold() {
-		return runGold;
-	}
+    // getRunner - Returns the runner controlled in this session
+    public Runner getRunner() {
+        return runner;
+    }
 
-	/** Gold earned purely from surviving. */
-	public int getTimeGold() {
-		return timeGold;
-	}
+    // getChasers - Returns an unmodifiable view of all chasers in this session
+    public List<Chaser> getChasers() {
+        return Collections.unmodifiableList(chasers);
+    }
 
-	/** Gold earned purely from pickups. */
-	public int getPickupGold() {
-		return pickupGold;
-	}
+    // addChaser - Registers a new chaser with this session
+    public void addChaser(Chaser chaser) {
+        if (chaser != null) {
+            chasers.add(chaser);
+        }
+    }
 
-	public boolean isRunning() {
-		return running;
-	}
+    // getElapsedTimeSeconds - Returns the total elapsed time in seconds
+    public double getElapsedTimeSeconds() {
+        return elapsedTimeSeconds;
+    }
 
-	public void endSession() {
-		running = false;
-	}
+    // getRunGold - Returns total run gold (time + pickups)
+    public int getRunGold() {
+        return runGold;
+    }
 
-	public boolean isRunnerAtExit() {
-		return runner.getX() == maze.getExitX() && runner.getY() == maze.getExitY();
-	}
+    // getTimeGold - Returns gold earned purely from survival time
+    public int getTimeGold() {
+        return timeGold;
+    }
 
-	/**
-	 * Advance the game by deltaSeconds. Called from GamePanel's timer every tick.
-	 */
-	public void update(double deltaSeconds) {
-		if (!running)
-			return;
+    // getPickupGold - Returns gold earned from pickups on the map
+    public int getPickupGold() {
+        return pickupGold;
+    }
 
-		// --- 1) Time ---
-		elapsedTimeSeconds += deltaSeconds;
+    // getPickupDiamonds - Returns the number of diamonds collected this run
+    public int getPickupDiamonds() {
+        return pickupDiamonds;
+    }
 
-		// --- 2) Survival gold (time-based) ---
-		survivalGoldAccumulator += deltaSeconds;
-		if (survivalGoldAccumulator >= SURVIVAL_GOLD_INTERVAL) {
-			int ticks = (int) (survivalGoldAccumulator / SURVIVAL_GOLD_INTERVAL);
-			survivalGoldAccumulator -= ticks * SURVIVAL_GOLD_INTERVAL;
+    // isRunning - Returns true while the session is active
+    public boolean isRunning() {
+        return running;
+    }
 
-			int gained = ticks * SURVIVAL_GOLD_PER_TICK;
-			timeGold += gained;
-			runGold += gained;
-		}
+    // endSession - Stops the session so update() no longer advances the game
+    public void endSession() {
+        running = false;
+    }
 
-		// --- 3) Pickup gold if runner is standing on it ---
-		Cell rc = maze.getCell(runner.getX(), runner.getY());
-		if (rc.hasGold()) {
-			int amount = rc.takeGold(); // should clear gold in the cell
-			pickupGold += amount;
-			runGold += amount;
-		}
+    // isRunnerAtExit - Returns true if the runner is currently on the exit cell
+    public boolean isRunnerAtExit() {
+        return runner.getX() == maze.getExitX() && runner.getY() == maze.getExitY();
+    }
 
-		// --- 4) Move chasers at a slower rate ---
-		chaserMoveAccumulator += deltaSeconds;
-		if (chaserMoveAccumulator >= CHASER_MOVE_INTERVAL) {
-			chaserMoveAccumulator -= CHASER_MOVE_INTERVAL;
+    // ---------- TICK / UPDATE LOOP ----------
 
-			for (Chaser chaser : chasers) {
-				chaser.update(this);
-			}
-		}
+    // update - Advances the session by deltaSeconds; called once per tick
+    public void update(double deltaSeconds) {
+        if (!running) return;
 
-		// --- 5) Spawn random gold occasionally ---
-		goldSpawnAccumulator += deltaSeconds;
-		if (goldSpawnAccumulator >= GOLD_SPAWN_INTERVAL) {
-			goldSpawnAccumulator -= GOLD_SPAWN_INTERVAL;
-			spawnRandomGold();
-		}
+        // 1) Time
+        elapsedTimeSeconds += deltaSeconds;
 
-		// --- 6) Collision: chaser on runner? ---
-		for (Chaser chaser : chasers) {
-			if (chaser.getX() == runner.getX() && chaser.getY() == runner.getY()) {
-				runner.kill();
-				running = false;
-				break;
-			}
-		}
-	}
+        // 2) Survival gold (time-based)
+        survivalGoldAccumulator += deltaSeconds;
+        if (survivalGoldAccumulator >= SURVIVAL_GOLD_INTERVAL) {
+            int ticks = (int) (survivalGoldAccumulator / SURVIVAL_GOLD_INTERVAL);
+            survivalGoldAccumulator -= ticks * SURVIVAL_GOLD_INTERVAL;
 
-	/** Spawn a single gold piece in a random walkable cell. */
-	private void spawnRandomGold() {
-		int w = maze.getWidth();
-		int h = maze.getHeight();
+            int gained = ticks * SURVIVAL_GOLD_PER_TICK;
+            timeGold += gained;
+            runGold  += gained;
+        }
 
-		// Try up to 100 random spots per spawn
-		for (int tries = 0; tries < 100; tries++) {
-			int x = rng.nextInt(w);
-			int y = rng.nextInt(h);
+        // 3) Pickup gold/diamonds if runner is standing on them
+        Cell rc = maze.getCell(runner.getX(), runner.getY());
+        if (rc.hasGold()) {
+            int amount = rc.takeGold(); // clears gold in the cell
+            pickupGold += amount;
+            runGold    += amount;
+        }
+        if (rc.hasDiamond()) {
+            rc.takeDiamond();
+            pickupDiamonds++;
 
-			// Skip borders and entrance/exit
-			if (x == 0 || x == w - 1 || y == 0 || y == h - 1)
-				continue;
-			if (x == maze.getEntranceX() && y == maze.getEntranceY())
-				continue;
-			if (x == maze.getExitX() && y == maze.getExitY())
-				continue;
+            int value = GameConfig.DIAMOND_GOLD_VALUE;
+            pickupGold += value;   // treat as bonus score
+            runGold    += value;
+        }
 
-			Cell c = maze.getCell(x, y);
-			if (!c.isWalkable())
-				continue;
-			if (c.hasGold())
-				continue;
+        // 4) Move chasers at a slower rate
+        chaserMoveAccumulator += deltaSeconds;
+        if (chaserMoveAccumulator >= CHASER_MOVE_INTERVAL) {
+            chaserMoveAccumulator -= CHASER_MOVE_INTERVAL;
 
-			c.setGold(1); // one gold for now
-			break;
-		}
-	}
+            for (Chaser chaser : chasers) {
+                chaser.update(this);
+            }
+        }
+
+        // 5) Spawn random loot occasionally
+        goldSpawnAccumulator += deltaSeconds;
+        if (goldSpawnAccumulator >= goldSpawnInterval) {
+            goldSpawnAccumulator -= goldSpawnInterval;
+            spawnRandomLoot();
+        }
+
+        // 6) Collision: chaser on runner?
+        for (Chaser chaser : chasers) {
+            if (chaser.getX() == runner.getX() && chaser.getY() == runner.getY()) {
+                runner.kill();
+                running = false;
+                break;
+            }
+        }
+    }
+
+    // ---------- LOOT SPAWNING ----------
+
+    // isOuterRing - Returns true if (x, y) is in the outer ring of the maze
+    private boolean isOuterRing(int x, int y, int w, int h) {
+        int marginX = 4; // columns near left/right edges
+        int marginY = 3; // rows near top/bottom
+
+        return (x < marginX || x >= w - marginX ||
+                y < marginY || y >= h - marginY);
+    }
+
+    // spawnRandomLoot - Spawns gold or a diamond in a random walkable cell
+    private void spawnRandomLoot() {
+        int w = maze.getWidth();
+        int h = maze.getHeight();
+
+        for (int tries = 0; tries < 100; tries++) {
+            int x = rng.nextInt(w);
+            int y = rng.nextInt(h);
+
+            // Skip borders and entrance/exit
+            if (x == 0 || x == w - 1 || y == 0 || y == h - 1) continue;
+            if (x == maze.getEntranceX() && y == maze.getEntranceY()) continue;
+            if (x == maze.getExitX() && y == maze.getExitY())         continue;
+
+            Cell c = maze.getCell(x, y);
+            if (!c.isWalkable())              continue;
+            if (c.hasGold() || c.hasDiamond()) continue;
+
+            boolean outer = isOuterRing(x, y, w, h);
+
+            // 60% of the time we insist on an outer-ring tile
+            if (rng.nextDouble() < 0.60 && !outer) {
+                continue;
+            }
+
+            // Decide whether this spawn is a diamond.
+            // Diamonds only spawn on outer ring to really reward exploration.
+            boolean wantDiamond = (rng.nextDouble() < diamondChance);
+            if (wantDiamond) {
+                c.setDiamond(true);
+            } else {
+                c.setGold(1);
+            }
+            break;
+        }
+    }
 }
