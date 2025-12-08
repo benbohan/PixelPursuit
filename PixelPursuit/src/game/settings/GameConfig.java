@@ -32,7 +32,7 @@ public final class GameConfig {
     // ----- Movement & timing -----
 
     // Runner glide step in ms (Swing Timer in GamePanel)
-    public static final int RUNNER_MOVE_INTERVAL_MS = 300;
+    public static final int RUNNER_MOVE_INTERVAL_MS = 330;
 
     // Chaser step interval in seconds (used in Session)
     public static final double CHASER_MOVE_INTERVAL_SEC = 0.6;
@@ -62,7 +62,7 @@ public final class GameConfig {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
             case HARD:
-                return 2;   // HARD: 2 chasers
+                return 3;   // HARD: 2 chasers
             case EASY:
             default:
                 return 1;   // EASY: 1 chaser
