@@ -106,7 +106,7 @@ public class AccountManager {
                 0.0,
                 14, // default color
                 0,  // default cosmetic
-                0,  // default multiplier
+                -1,  // default multiplier
                 0L);
 
         // Unlock default color

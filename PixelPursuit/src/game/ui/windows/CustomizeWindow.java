@@ -192,9 +192,10 @@ public class CustomizeWindow extends JFrame {
 
         setLocationRelativeTo(null);
 
-        // ---------- INITIAL SELECTION HIGHLIGHT ----------
+     // ---------- INITIAL SELECTION HIGHLIGHT ----------
 
         if (account != null) {
+            // ----- Color -----
             int equippedColor = account.getColor();
             if (equippedColor >= 0 && equippedColor < colorButtons.length
                     && colorButtons[equippedColor] != null) {
@@ -205,6 +206,7 @@ public class CustomizeWindow extends JFrame {
                 }
             }
 
+            // ----- Cosmetic -----
             int equippedCosmeticId = account.getCosmetic();
             int equippedCosmeticIndex = CosmeticInfo.indexOfId(equippedCosmeticId);
             if (equippedCosmeticIndex >= 0
@@ -215,15 +217,32 @@ public class CustomizeWindow extends JFrame {
                 cosmeticSelectedLabel.setText("Selected: " + info.name);
             }
 
+            // ----- Multiplier -----
             int equippedMult = account.getMultiplier();
-            MultiplierInfo mInfo = MultiplierInfo.byIndex(equippedMult);
-            if (mInfo != null
-                    && equippedMult >= 0 && equippedMult < multiplierButtons.length
-                    && multiplierButtons[equippedMult] != null) {
-                setSelectedMultiplierBorder(equippedMult);
-                multiplierSelectedLabel.setText("Selected: " + mInfo.label);
+
+            // If we use -1 as "base 1x", or any invalid value, show base 1x with no ring.
+            if (equippedMult < 0) {
+                multiplierSelectedLabel.setText("Selected: 1x (base)");
+            } else {
+                MultiplierInfo mInfo = MultiplierInfo.byIndex(equippedMult);
+                // Only highlight if:
+                //  - index is valid
+                //  - button exists
+                //  - AND the corresponding unlock bit is actually set
+                if (mInfo != null
+                        && equippedMult >= 0 && equippedMult < multiplierButtons.length
+                        && multiplierButtons[equippedMult] != null
+                        && isUnlockedBit(mInfo.bitIndex)) {
+
+                    setSelectedMultiplierBorder(equippedMult);
+                    multiplierSelectedLabel.setText("Selected: " + mInfo.label);
+                } else {
+                    // Not unlocked or bad index → treat as base 1x, no ring
+                    multiplierSelectedLabel.setText("Selected: 1x (base)");
+                }
             }
         }
+
 
         setVisible(true);
     }

@@ -287,7 +287,7 @@ public class LogInWindow extends JFrame {
     // createMenuButton - Creates a rounded menu button with screen-based font size
     private RoundedHoverButton createMenuButton(String text) {
         RoundedHoverButton button = new RoundedHoverButton(text);
-        int buttonFontSize = Math.max(18, Math.min(screenHeight / 34, 30));
+        int buttonFontSize = Math.max(14, Math.min(screenHeight / 42, 20));
         button.setFont(GameFonts.get((float) buttonFontSize, Font.BOLD));
         return button;
     }
