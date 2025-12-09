@@ -56,7 +56,20 @@ public class CustomizeWindow extends JFrame {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(true);
         content.setBackground(bgColor);
-        setContentPane(content);
+        
+        JScrollPane scrollPane = new JScrollPane(
+                content,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(true);
+        scrollPane.setBackground(bgColor);
+        scrollPane.getViewport().setOpaque(true);
+        scrollPane.getViewport().setBackground(bgColor);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // smoother wheel scrolling
+
+        setContentPane(scrollPane);
 
         JLabel titleLabel = new JLabel("Customize Runner");
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -172,11 +185,11 @@ public class CustomizeWindow extends JFrame {
 
         pack();
 
-        int minW = 700;
-        int minH = 720;
-        int w = Math.max(getWidth(), minW);
-        int h = Math.max(getHeight(), minH);
-        setSize(w, h);
+        Dimension size = getSize();
+        size.width = Math.max(size.width, 700);
+        size.height = Math.min(size.height, 720);
+        setSize(size);
+
         setLocationRelativeTo(null);
 
         // ---------- INITIAL SELECTION HIGHLIGHT ----------

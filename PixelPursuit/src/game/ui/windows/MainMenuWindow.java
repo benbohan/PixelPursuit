@@ -166,6 +166,27 @@ public class MainMenuWindow extends JFrame {
         centerWrapper.add(menuPanel);
         mainPanel.add(centerWrapper, BorderLayout.CENTER);
 
+        // ---------- INFO BUTTON (BOTTOM-RIGHT) ----------
+
+        InfoButton infoButton = new InfoButton();
+
+        JPanel infoBar = new JPanel(new BorderLayout());
+        infoBar.setOpaque(false);
+        // padding: top, left, bottom, right
+        infoBar.setBorder(new EmptyBorder(0, 0, 20, 24));
+        infoBar.add(infoButton, BorderLayout.EAST);
+
+        mainPanel.add(infoBar, BorderLayout.SOUTH);
+
+        // infoButton - Opens the info window
+        infoButton.addActionListener(e -> {
+            if (windowManager != null) {
+                windowManager.showInfoWindow();
+            } else {
+                new InfoWindow(currentAccount);
+            }
+        });
+
         // ---------- BUTTON ACTIONS ----------
 
         // quitButton - Exits the game (via WindowManager if present)
@@ -249,7 +270,7 @@ public class MainMenuWindow extends JFrame {
                 currentAccount.getVaultDiamonds()
         );
 
-        double multValue = 1.0;
+        double multValue;
         int multIndex = currentAccount.getMultiplier();
         multValue = MultiplierInfo.getValueForIndex(multIndex);
 
