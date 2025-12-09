@@ -50,6 +50,7 @@ PixelPursuit/
 │     │  ├─ components/
 │     │  │  ├─ controls/
 │     │  │  │  ├─ 🟢ColorTileButton.java
+│     │  │  │  ├─ 🟢InfoButton.java
 │     │  │  │  ├─ 🟢RoundedHoverButton.java
 │     │  │  │  ├─ 🟢RoundedPasswordField.java
 │     │  │  │  ├─ 🟢RoundedTextField.java
@@ -61,7 +62,6 @@ PixelPursuit/
 │     │  │     └─ 🟢LootDisplayPanel.java
 │     │  │
 │     │  ├─ theme/
-│     │  │  ├─ 🟢Assets.java
 │     │  │  ├─ 🟢GameFonts.java
 │     │  │  └─ 🟢UiColors.java
 │     │  │
@@ -69,9 +69,11 @@ PixelPursuit/
 │     │     ├─ 🟢CustomizeWindow.java
 │     │     ├─ 🟢DifficultyWindow.java
 │     │     ├─ 🟢GameWindow.java
+│     │     ├─ 🟢InfoWindow.java
 │     │     ├─ 🟢LeaderboardWindow.java
 │     │     ├─ 🟢LogInWindow.java
-│     │     └─ 🟢MainMenuWindow.java
+│     │     ├─ 🟢MainMenuWindow.java
+│     │     └─ 🟢PauseWindow.java
 │     │
 │     ├─ world/
 │     │  ├─ 🟢Cell.java

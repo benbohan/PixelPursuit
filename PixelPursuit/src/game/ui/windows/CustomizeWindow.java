@@ -56,7 +56,20 @@ public class CustomizeWindow extends JFrame {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(true);
         content.setBackground(bgColor);
-        setContentPane(content);
+        
+        JScrollPane scrollPane = new JScrollPane(
+                content,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(true);
+        scrollPane.setBackground(bgColor);
+        scrollPane.getViewport().setOpaque(true);
+        scrollPane.getViewport().setBackground(bgColor);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // smoother wheel scrolling
+
+        setContentPane(scrollPane);
 
         JLabel titleLabel = new JLabel("Customize Runner");
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -172,16 +185,17 @@ public class CustomizeWindow extends JFrame {
 
         pack();
 
-        int minW = 700;
-        int minH = 720;
-        int w = Math.max(getWidth(), minW);
-        int h = Math.max(getHeight(), minH);
-        setSize(w, h);
+        Dimension size = getSize();
+        size.width = Math.max(size.width, 700);
+        size.height = Math.min(size.height, 720);
+        setSize(size);
+
         setLocationRelativeTo(null);
 
-        // ---------- INITIAL SELECTION HIGHLIGHT ----------
+     // ---------- INITIAL SELECTION HIGHLIGHT ----------
 
         if (account != null) {
+            // ----- Color -----
             int equippedColor = account.getColor();
             if (equippedColor >= 0 && equippedColor < colorButtons.length
                     && colorButtons[equippedColor] != null) {
@@ -192,6 +206,7 @@ public class CustomizeWindow extends JFrame {
                 }
             }
 
+            // ----- Cosmetic -----
             int equippedCosmeticId = account.getCosmetic();
             int equippedCosmeticIndex = CosmeticInfo.indexOfId(equippedCosmeticId);
             if (equippedCosmeticIndex >= 0
@@ -202,15 +217,32 @@ public class CustomizeWindow extends JFrame {
                 cosmeticSelectedLabel.setText("Selected: " + info.name);
             }
 
+            // ----- Multiplier -----
             int equippedMult = account.getMultiplier();
-            MultiplierInfo mInfo = MultiplierInfo.byIndex(equippedMult);
-            if (mInfo != null
-                    && equippedMult >= 0 && equippedMult < multiplierButtons.length
-                    && multiplierButtons[equippedMult] != null) {
-                setSelectedMultiplierBorder(equippedMult);
-                multiplierSelectedLabel.setText("Selected: " + mInfo.label);
+
+            // If we use -1 as "base 1x", or any invalid value, show base 1x with no ring.
+            if (equippedMult < 0) {
+                multiplierSelectedLabel.setText("Selected: 1x (base)");
+            } else {
+                MultiplierInfo mInfo = MultiplierInfo.byIndex(equippedMult);
+                // Only highlight if:
+                //  - index is valid
+                //  - button exists
+                //  - AND the corresponding unlock bit is actually set
+                if (mInfo != null
+                        && equippedMult >= 0 && equippedMult < multiplierButtons.length
+                        && multiplierButtons[equippedMult] != null
+                        && isUnlockedBit(mInfo.bitIndex)) {
+
+                    setSelectedMultiplierBorder(equippedMult);
+                    multiplierSelectedLabel.setText("Selected: " + mInfo.label);
+                } else {
+                    // Not unlocked or bad index → treat as base 1x, no ring
+                    multiplierSelectedLabel.setText("Selected: 1x (base)");
+                }
             }
         }
+
 
         setVisible(true);
     }

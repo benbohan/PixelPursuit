@@ -71,6 +71,9 @@ public final class Multiplier {
     // accountMultiplierValue - Maps Account.multiplier index to numeric value, defaults to 1x
     private static double accountMultiplierValue(int index) {
         // MultiplierInfo.getValueForIndex: 0→2, 1→3, 2→5, 3→10, else 1
+        if (index < 0) {
+            return 1.0;
+        }
         return (double) MultiplierInfo.getValueForIndex(index);
     }
 }

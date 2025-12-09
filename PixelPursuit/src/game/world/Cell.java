@@ -23,7 +23,7 @@ public class Cell {
     private int gold;
     private boolean diamond;
 
-    // Later these will be Runner / Chaser; for now keep it generic Object.
+    // Later these will be Runner / Chaser, for now keep it generic Object
     private final List<Object> entities = new ArrayList<>();
 
     // ---------- CONSTRUCTORS ----------
@@ -58,12 +58,12 @@ public class Cell {
         this.walkable = walkable;
     }
 
-    // isWall - Convenience: returns true if this cell is a wall
+    // isWall - Returns true if this cell is a wall
     public boolean isWall() {
         return !walkable;
     }
 
-    // setWall - Convenience: sets this cell to wall or floor
+    // setWall - Sets this cell to wall or floor
     public void setWall(boolean wall) {
         this.walkable = !wall;
     }

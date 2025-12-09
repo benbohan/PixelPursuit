@@ -34,6 +34,7 @@ public final class GameConfig {
 
     // ---------- MOVEMENT & TIMING ----------
 
+    // Survival gold: how often and how much
     public static final int RUNNER_MOVE_INTERVAL_MS      = 300;
     public static final double CHASER_MOVE_INTERVAL_SEC  = 0.6;
     public static final double GOLD_SPAWN_INTERVAL_SEC   = 5.0;
@@ -59,6 +60,7 @@ public final class GameConfig {
         Difficulty d = getCurrentDifficulty();
         switch (d) {
             case HARD:
+                //return 3;   // HARD: 2 chasers
                 return 2;
             case EASY:
             default:

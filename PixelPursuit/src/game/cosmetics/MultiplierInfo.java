@@ -71,4 +71,21 @@ public class MultiplierInfo {
         MultiplierInfo m = byIndex(index);
         return (m != null) ? m.diamondCost : 0;
     }
+    
+    // ---------- ACCOUNT-LEVEL HELPERS (treat invalid index as 1x) ----------
+
+    /**
+     * For Account.multiplier:
+     *  - index in [0,3]  -> use shop multiplier (2x,3x,5x,10x)
+     *  - anything else   -> treat as base 1x
+     */
+    public static int getValueForAccountIndex(int accountIndex) {
+        if (accountIndex < 0) return 1;              // base 1x
+        return getValueForIndex(accountIndex);       // 0..3 -> 2,3,5,10; others -> 1
+    }
+
+    public static String getLabelForAccountIndex(int accountIndex) {
+        if (accountIndex < 0) return "1x";           // base 1x
+        return getLabelForIndex(accountIndex);
+    }
 }

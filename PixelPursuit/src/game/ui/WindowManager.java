@@ -84,6 +84,11 @@ public class WindowManager {
     public void showCustomizeWindow() {
         new CustomizeWindow(this, currentAccount);
     }
+    
+    // showInfoWindow - Opens the info window as a separate window
+    public void showInfoWindow() {
+        new InfoWindow(this, currentAccount);
+    }
 
     // ---------- ACCOUNT / UI SYNC ----------
 

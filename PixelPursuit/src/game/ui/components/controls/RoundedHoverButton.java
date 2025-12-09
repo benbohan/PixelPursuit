@@ -53,7 +53,7 @@ public class RoundedHoverButton extends JButton {
         button.setMinimumSize(size);
 
         // Scale font roughly with screen height, but clamp to a reasonable range
-        int fontSize = Math.max(18, Math.min(screenHeight / 34, 30));
+        int fontSize = Math.max(14, Math.min(screenHeight / 42, 20));
         button.setFont(GameFonts.get((float) fontSize, Font.BOLD));
 
         return button;
