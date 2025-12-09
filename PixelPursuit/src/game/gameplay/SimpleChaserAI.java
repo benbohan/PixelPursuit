@@ -338,7 +338,7 @@ public class SimpleChaserAI implements ChaserAI {
         return true;
     }
 
-    // shuffleDirs - Fisher–Yates shuffle (currently unused, kept for future randomness)
+    // shuffleDirs - Shuffle (currently unused, kept for future randomness)
     @SuppressWarnings("unused")
     private void shuffleDirs(int[][] dirs) {
         for (int i = dirs.length - 1; i > 0; i--) {
