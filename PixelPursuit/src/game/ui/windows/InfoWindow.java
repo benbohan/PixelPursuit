@@ -18,14 +18,14 @@ public class InfoWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    private final WindowManager windowManager;
-    private final Account account;
+    //private final WindowManager windowManager;
+    //private final Account account;
 
     // InfoWindow - Main constructor, wired from WindowManager
     public InfoWindow(WindowManager windowManager, Account account) {
         super("How to Play");
-        this.windowManager = windowManager;
-        this.account = account;
+        //this.windowManager = windowManager;
+        //this.account = account;
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);

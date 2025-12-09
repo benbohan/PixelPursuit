@@ -23,7 +23,7 @@ public class PauseWindow extends JDialog {
     private final GameWindow gameWindow;
 
     /** Window manager, kept for consistency with other windows. */
-    private final WindowManager windowManager;
+    //private final WindowManager windowManager;
 
     // ---------- CONSTRUCTORS ----------
 
@@ -32,7 +32,7 @@ public class PauseWindow extends JDialog {
         // true = modal; blocks input to the game window while open
         super(owner, "Paused", true);
         this.gameWindow = owner;
-        this.windowManager = windowManager;
+        //this.windowManager = windowManager;
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 

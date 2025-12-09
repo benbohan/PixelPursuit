@@ -62,7 +62,6 @@ PixelPursuit/
 │     │  │     └─ 🟢LootDisplayPanel.java
 │     │  │
 │     │  ├─ theme/
-│     │  │  ├─ 🟢Assets.java
 │     │  │  ├─ 🟢GameFonts.java
 │     │  │  └─ 🟢UiColors.java
 │     │  │

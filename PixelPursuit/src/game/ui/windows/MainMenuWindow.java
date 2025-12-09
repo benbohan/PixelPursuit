@@ -13,7 +13,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * MainMenuWindow - Full-screen main menu with background art, loot HUD, and menu buttons.
+ * MainMenuWindow - Full screen main menu with background art, loot HUD, and menu buttons.
  */
 public class MainMenuWindow extends JFrame {
 
