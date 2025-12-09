@@ -78,7 +78,8 @@ public class LogInWindow extends JFrame {
         JLabel userLabel = new JLabel("Username:");
         JLabel passLabel = new JLabel("Password:");
 
-        int labelFontSize = Math.max(16, Math.min(screenHeight / 40, 26));
+        // Smaller, more responsive label font so it fits on laptops/smaller screens
+        int labelFontSize = Math.max(14, Math.min(screenHeight / 45, 20));
         userLabel.setFont(GameFonts.get((float) labelFontSize, Font.PLAIN));
         passLabel.setFont(GameFonts.get((float) labelFontSize, Font.PLAIN));
         userLabel.setForeground(Color.WHITE);
@@ -87,10 +88,11 @@ public class LogInWindow extends JFrame {
         userLabel.setHorizontalAlignment(SwingConstants.LEFT);
         passLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        passLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
-        passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // (AlignmentX here doesn't affect X_AXIS BoxLayout, but harmless to keep)
+        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         RoundedHoverButton loginButton  = createMenuButton("Log In");
         RoundedHoverButton createButton = createMenuButton("Create Account");
@@ -106,7 +108,15 @@ public class LogInWindow extends JFrame {
         int labelGap  = Math.max(8, screenHeight / 120);
         int buttonGap = Math.max(10, screenHeight / 80);
 
-        int labelWidth = screenWidth / 8;
+        // Make sure label width is at least wide enough for the full text,
+        // so "Username:" / "Password:" never get clipped on smaller screens.
+        int baseLabelWidth = screenWidth / 8;
+        int naturalLabelWidth = Math.max(
+                userLabel.getPreferredSize().width,
+                passLabel.getPreferredSize().width
+        );
+        int labelWidth = Math.max(baseLabelWidth, naturalLabelWidth);
+
         Dimension labelSize = new Dimension(labelWidth, userLabel.getPreferredSize().height);
         userLabel.setPreferredSize(labelSize);
         userLabel.setMinimumSize(labelSize);
