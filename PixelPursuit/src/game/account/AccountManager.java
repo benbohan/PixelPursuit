@@ -68,7 +68,8 @@ public class AccountManager {
     }
 
     // saveAccounts - Writes all accounts back to accounts.txt
-    private void saveAccounts() {
+    // *** CHANGED: private → protected (to allow test override) ***
+    protected void saveAccounts() {
         File file = new File(ACCOUNTS_PATH);
 
         // Ensure the folder exists
@@ -96,8 +97,12 @@ public class AccountManager {
 
     // createAccount - Creates a new account; returns null if username is taken
     public Account createAccount(String username, String password) {
+        if (username == null || password == null) {
+            throw new IllegalArgumentException("Username and password cannot be null");
+        }
+
         if (accounts.containsKey(username)) {
-            return null; // Username taken
+            throw new IllegalArgumentException("Username already exists");
         }
 
         // New account: 0 currencies / default equips / no unlocks
@@ -117,11 +122,19 @@ public class AccountManager {
         return acc;
     }
 
-    // login - Returns the Account or null if username/password is invalid
+    // login - Returns the Account or throws if username/password is invalid
+    // *** CHANGED: Now throws exceptions as required by tests ***
     public Account login(String username, String password) {
         Account acc = accounts.get(username);
-        if (acc == null) return null;
-        if (!acc.getPassword().equals(password)) return null;
+
+        if (acc == null) {
+            throw new IllegalArgumentException("Unknown username");
+        }
+
+        if (!acc.getPassword().equals(password)) {
+            throw new IllegalArgumentException("Incorrect password");
+        }
+
         return acc;
     }
 

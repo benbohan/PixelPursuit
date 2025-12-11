@@ -48,6 +48,24 @@ public class Account {
         this.multiplier = multiplier;
         this.unlocks = unlocks;
     }
+    
+    // Constructor for testing and internal use
+    public Account(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.freeGold = 0;
+        this.freeDiamonds = 0;
+        this.vaultGold = 0;
+        this.vaultDiamonds = 0;
+        this.bestTime = 0.0;
+
+        // Default equipped cosmetic state
+        this.color = 14;       // default gray
+        this.cosmetic = 0;     // COSMETIC_NONE
+        this.multiplier = -1;  // no multiplier
+
+        this.unlocks = 0L;     // no unlocks by default
+    }
 
     // ---------- GETTERS ----------
 
